@@ -5,11 +5,11 @@ Created on Mon Oct  2 10:02:40 2023
 @author: Susan
 """
 
-import config
+from . import config
 import requests
 import csv
 
-# Get api key from .env file 
+# Get api key from config file 
 api_key = config.api_key
 
 # Start date in unix timestamp
