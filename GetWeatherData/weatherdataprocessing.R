@@ -5,11 +5,13 @@
 
 ### TO DO:
 #### Add loading data from python file to R script
+#### Implementing altitude in dataset
 #### Add check weather column in data
-#### Prepare data for ET0 calculation
 #### Add return to python file function
 
 # Load necessary libraries
+library(lubridate)
+library(reticulate)
 
 # Set working directory
 
@@ -22,18 +24,20 @@
 # csv_file <- args[1]
 
 # Read the data from the CSV file
-# data <- read.csv(csv_file)
+weatherdata <- read.csv('~/Datasets/testdataset.csv')
 
 # Main
 ## Preprocess data
 
-data <- data.frame(testdataset$dt, testdataset$sunrise, testdataset$sunset, testdataset$temp, testdataset$pressure, testdataset$humidity, testdataset$dew_point, testdataset$wind_speed, testdataset$weather_main)
-colnames(data) <- c("dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed", "weather")
+data <- data.frame(weatherdata$lat, weatherdata$lon, weatherdata$dt, weatherdata$sunrise, weatherdata$sunset, weatherdata$temp, weatherdata$pressure, weatherdata$humidity, weatherdata$dew_point, weatherdata$wind_speed, weatherdata$weather_main)
+colnames(data) <- c("lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed", "weather")
 
 data$date_per_hour <- as.POSIXct(data$dt, origin = "1970-01-01", tz = "UTC")
 data$date <-  substr(as.character(data$date_per_hour), 1, 10)
 
 # Check if columns are numeric
+data$lat <- as.numeric(data$lat)
+data$lon <- as.numeric(data$lon)
 data$temp <- as.numeric(data$temp)
 data$pressure <- as.numeric(data$pressure)
 data$humidity <- as.numeric(data$humidity)
@@ -85,5 +89,27 @@ for (date in unique_dates) {
   data[data$date == date, "sunshine_hour"] <- clear_count
 }
 
-## Perform your R data analysis on data
+## Prepare data for ET calculation
+
+# Group by date
+df <- data.frame(unique(as.Date(data$date)))
+colnames(df) <- "date"
+
+df$day_of_year <- yday(df$date)
+df$lat <-  tapply(data$lat, data$date, min)
+df$lon <-  tapply(data$lon, data$date, min)
+df$Tmin <-  tapply(data$temp, data$date, min)
+df$Tmax <- tapply(data$temp, data$date, max)
+df$Tmean <- tapply(data$temp, data$date, mean)
+df$RHmin <- tapply(data$humidity, data$date, min)
+df$RHmax <- tapply(data$humidity, data$date, max)
+df$uz <- tapply(data$wind_speed, data$date, mean)
+df$n <- tapply(data$sunshine_hour, data$date, min)
+df$pressure <- tapply(data$pressure, data$date, mean)
+
+
+## Return the R dataframe as Python object
+write.csv(df, file = '~/Datasets/new', row.names = FALSE)
+
+
 
