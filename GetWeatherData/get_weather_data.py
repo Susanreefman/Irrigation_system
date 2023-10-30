@@ -5,29 +5,21 @@ Created on Mon Oct  2 10:02:40 2023
 @author: Susan
 """
 
+import config
 import requests
-import json
 import csv
 
-API = "922c67c6382ed3a9626907e565ce178a"
-# lat = 44.8619648
-# lon = 7.5110815
-# time = 1685578353
+# Get api key from .env file 
+api_key = config.api_key
 
-#api_url = 'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.8619648&lon=7.5110815&dt=1685578353&units=metric&appid=353cecb69d945dbff2eb39c0bfb41f7c'
-#api_url = 'https://api.openweathermap.org/data/3.0/onecall/day_summary?lat=44.8619648&lon=7.5110815&date=2023-06-01&units=metric&appid=353cecb69d945dbff2eb39c0bfb41f7c'
-
-# date = 1640991600
-# date = 1644051600
+# Start date in unix timestamp
 date = 1649844000
 
-# june = []
-# json_file_path = 'june_data.json'
 flat_data_list = []
 
 for i in range(350):
 
-    api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.898137&lon=7.767975&dt={date}&units=metric&appid=353cecb69d945dbff2eb39c0bfb41f7c'
+    api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.898137&lon=7.767975&dt={date}&units=metric&appid={api_key}'
     date += 3600
     response = requests.get(api_url)
 
