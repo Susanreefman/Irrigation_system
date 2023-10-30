@@ -1,23 +1,33 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Oct  2 10:02:40 2023
 
-@author: Susan
+"""
+get_weater_data
+Description: Get weather data from Open Weather API
+Author: Susan Reefman
+Date: 23/09/2023
 """
 
-from . import config
 import requests
 import csv
+from dotenv import load_dotenv
+import os
+
+def configure():
+    load_dotenv()
+
+
+configure()
 
 # Get api key from config file 
-api_key = config.api_key
+api_key = os.getenv('api_key')
 
 # Start date in unix timestamp
 date = 1649844000
 
 flat_data_list = []
 
-for i in range(350):
+for i in range(1):
 
     api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.898137&lon=7.767975&dt={date}&units=metric&appid={api_key}'
     date += 3600
@@ -55,8 +65,8 @@ for i in range(350):
         
 response.close()
 
-# Define the CSV file name
-csv_file = 'weather_data.csv'
+# Define path of output CSV file 
+csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data.csv' 
 
 # Write the data in the list to the CSV file
 with open(csv_file, 'w', newline='') as file:
