@@ -111,6 +111,7 @@ def main(df):
     """
     
     """
+    print("ET calculation started")
     
     ETo = dict()
     newdict = dict()
@@ -147,7 +148,9 @@ def main(df):
         ET0 = penman_monteith(Tmean, delta, uz, solar_radiation, pressure, gamma, ea, es)
         
         ETo[date] = round(ET0,1)
-          
+        
+        df.at[index, 'ET'] = round(ET0,1)
+        df.at[index, 'solar'] = solar_radiation
         
         # Convert date keys to datetime objects for sorting
         date_objects = [date for date in ETo.keys()]
@@ -158,8 +161,10 @@ def main(df):
         # Create a new dictionary with sorted date keys
         sorted_date_dict = {date.strftime('%d/%m/%Y'): round(value,6) for date, value in sorted_date_value_pairs}
     
+    df.to_csv('~/Downloads/result.csv', index=False)
+    print(df)
 
-    print(sorted_date_dict.values())
+    # print(sorted_date_dict)
 
     # print(ETo.values())
         

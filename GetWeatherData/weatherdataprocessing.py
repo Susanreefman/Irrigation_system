@@ -88,13 +88,15 @@ def process(weatherdata):
     # Add a new column 'day_of_year'
     df['day_of_year'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
     
+    print("dataset processed")
+    
     return df
 
 
 
 
 def main():
-    weatherdata = pd.read_csv('~/Documents/Datasets/testdataset.csv')
+    weatherdata = pd.read_csv('~/Downloads/full_weather_dataset.csv')
     df = process(weatherdata)
 
     return df
