@@ -11,7 +11,9 @@ from pytz import UTC
 import sys
 
 
-def process(weatherdata):
+def main():
+    weatherdata = pd.read_csv('~/Downloads/x.csv')
+
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
         "lon": weatherdata['lon'],
@@ -80,7 +82,7 @@ def process(weatherdata):
         "pressure" : data.groupby('date')['pressure'].mean()
     })
     
-    df = df.reset_index(drop=True)
+    # df = df.reset_index(drop=True)
 
     # Convert the 'date' column to a datetime object
     df['date'] = pd.to_datetime(df['date'])
@@ -88,17 +90,9 @@ def process(weatherdata):
     # Add a new column 'day_of_year'
     df['day_of_year'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
     
+    
     print("dataset processed")
     
-    return df
-
-
-
-
-def main():
-    weatherdata = pd.read_csv('~/Downloads/full_weather_dataset.csv')
-    df = process(weatherdata)
-
     return df
 
 if __name__ == "__main__":

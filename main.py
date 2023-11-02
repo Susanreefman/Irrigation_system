@@ -25,7 +25,6 @@ def main():
     
     """
     df = weatherdataprocessing.main()
-    
     ETcalculation.main(df)
     
     

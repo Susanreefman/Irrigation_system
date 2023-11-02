@@ -162,8 +162,7 @@ def main(df):
         sorted_date_dict = {date.strftime('%d/%m/%Y'): round(value,6) for date, value in sorted_date_value_pairs}
     
     df.to_csv('~/Downloads/result.csv', index=False)
-    print(df)
-
+    
     # print(sorted_date_dict)
 
     # print(ETo.values())

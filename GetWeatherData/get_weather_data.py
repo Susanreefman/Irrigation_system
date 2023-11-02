@@ -26,11 +26,11 @@ configure()
 api_key = os.getenv('api_key')
 
 # Start date in unix timestamp
-date = 1657213200
+date = 1669960800
 
 flat_data_list = []
 
-for i in range(850):
+for i in range(700):
 
     api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.898137&lon=7.767975&dt={date}&units=metric&appid={api_key}'
     date += 3600
