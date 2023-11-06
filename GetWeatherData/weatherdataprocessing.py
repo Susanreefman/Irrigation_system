@@ -12,7 +12,7 @@ import sys
 
 
 def main():
-    weatherdata = pd.read_csv('~/Downloads/x.csv')
+    weatherdata = pd.read_csv('~/Downloads/full_weather_dataset2022.csv')
 
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
