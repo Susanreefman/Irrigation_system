@@ -3,6 +3,9 @@
 Created on Mon Oct 30 16:08:21 2023
 
 @author: Susan
+
+TO DO: check if dt is consecutive
+        Add checks for other columns
 """
 
 import pandas as pd
@@ -11,8 +14,46 @@ from pytz import UTC
 import sys
 
 
+def check_consecutive_date():
+    """Checking if dates are consecutive"""
+    # given list lst
+    # sort the list
+    # sorted_lst = sorted(lst)
+ 
+    # check if all elements are consecutive
+    # for i in range(1, len(sorted_lst)):
+        #all(sorted_lst[i] == sorted_lst[i-1] + 1
+        # is_consecutive = all(sorted_lst[i] == sorted_lst[i-1] + 1 for i in range(1, len(sorted_lst)))
+ 
+        # print i that is not consecutive
+        # print(is_consecutive) # prints True
+
+def data_validation():
+    """Validate data """
+    
+    # if not all(data['temp'] >= -20) and not all(data['temp'] <= 40):
+    #     data = data[(data['temp'] >= -20) & (data['temp'] <= 40)]
+    # Print when data removed
+    
+    # if not all(data['pressure'] >= 85) and not all(data['pressure'] <= 110):
+    #     data = data[(data['pressure'] >= 85) & (data['pressure'] <= 110)]
+    # Print when data removed
+    
+    # if not all(data['humidity'] >= 0) and not all(data['humidity'] <= 100):
+    #     data = data[(data['humidity'] >= 0) & (data['humidity'] <= 100)]
+    # Print when data removed
+    
+    # if not all(data['dew_point'] >= -33) and not all(data['dew_point'] <= 35):
+    #     data = data[(data['dew_point'] >= -33) & (data['dew_point'] <= 35)]
+    # Print when data removed
+    
+    # if not all(data['wind_speed'] >= 0) and not all(data['wind_speed'] <= 115):
+    #     data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
+    # Print when data removed
+ 
+
 def main():
-    weatherdata = pd.read_csv('~/Downloads/full_weather_dataset2022.csv')
+    weatherdata = pd.read_csv('~/Downloads/Guibergia_2022.csv')
 
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
@@ -40,23 +81,8 @@ def main():
     # data['wind_speed'] = pd.to_numeric(data['wind_speed'])
     
     # data = data.dropna()
-    
-    # if not all(data['temp'] >= -20) and not all(data['temp'] <= 40):
-    #     data = data[(data['temp'] >= -20) & (data['temp'] <= 40)]
-    
+ 
     data['pressure'] = data['pressure'] / 10
-    
-    # if not all(data['pressure'] >= 85) and not all(data['pressure'] <= 110):
-    #     data = data[(data['pressure'] >= 85) & (data['pressure'] <= 110)]
-    
-    # if not all(data['humidity'] >= 0) and not all(data['humidity'] <= 100):
-    #     data = data[(data['humidity'] >= 0) & (data['humidity'] <= 100)]
-    
-    # if not all(data['dew_point'] >= -33) and not all(data['dew_point'] <= 35):
-    #     data = data[(data['dew_point'] >= -33) & (data['dew_point'] <= 35)]
-    
-    # if not all(data['wind_speed'] >= 0) and not all(data['wind_speed'] <= 115):
-    #     data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
     
     data['sunrise'] = pd.to_datetime(data['sunrise'], origin='1970-01-01', unit='s', utc=True)
     data['sunset'] = pd.to_datetime(data['sunset'], origin='1970-01-01', unit='s', utc=True)
