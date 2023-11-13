@@ -26,14 +26,15 @@ configure()
 api_key = os.getenv('api_key')
 
 # Start date in unix timestamp
-date = 1655136000
+date = 1667541600
+
 
 # 1-1-2022
 # date = 1640991600
 
 flat_data_list = []
 
-for i in range(950):
+for i in range(150):
 
     api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.64055556&lon=7.60750000&dt={date}&units=metric&appid={api_key}'
     date += 3600
@@ -72,7 +73,7 @@ for i in range(950):
 response.close()
 
 # Define path of output CSV file 
-csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_Guibergia_jul.csv' 
+csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_Guibergia_nov.csv' 
 
 # Write the data in the list to the CSV file
 with open(csv_file, 'w', newline='') as file:
