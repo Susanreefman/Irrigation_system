@@ -1,58 +1,70 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Oct 30 16:08:21 2023
-
-@author: Susan
-
-TO DO: check if dt is consecutive
-        Add checks for other columns
+Weatherdataprocessing
+Description: functions to process weather data.
+Author: Susan Reefman
+Date: 30/10/2023
 """
 
-import pandas as pd
-from datetime import datetime
-from pytz import UTC
 import sys
+import pandas as pd
 
 
-def check_consecutive_date():
-    """Checking if dates are consecutive"""
-    # given list lst
-    # sort the list
-    # sorted_lst = sorted(lst)
- 
-    # check if all elements are consecutive
-    # for i in range(1, len(sorted_lst)):
-        #all(sorted_lst[i] == sorted_lst[i-1] + 1
-        # is_consecutive = all(sorted_lst[i] == sorted_lst[i-1] + 1 for i in range(1, len(sorted_lst)))
- 
-        # print i that is not consecutive
-        # print(is_consecutive) # prints True
-
-def data_validation():
+def validate_instance_type(data):
     """Validate data """
+    flag = True
+    colnames = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed"]
+    try:
+        for i in colnames:
+            data[i] = pd.to_numeric(data[i], errors='raise')
+        
+    except ValueError:
+        for i in colnames:
+            data[i] = pd.to_numeric(data[i], errors='coerce')
+        data = data.dropna()
+        flag = False
     
-    # if not all(data['temp'] >= -20) and not all(data['temp'] <= 40):
-    #     data = data[(data['temp'] >= -20) & (data['temp'] <= 40)]
-    # Print when data removed
+    if flag == True:
+        return 'Instance types validated, no instances removed'
+    else:
+        return 'Rows of the columns where instances are not numeric are deleted'
+
+
+def data_validation(data):
+    """Validate data """
+    result = 'Data validated, no instances removed'
+    # Temperature of all instances must be between -20 and 40 degrees
+    if not (all(data['temp'] > -90.00) and all(data['temp'] < 50.00)):
+        data = data[(data['temp'] > -90.00) & (data['temp'] < 50.00)]
+        result = 'Removed instances where temperature was lower then -90 or above 50 degrees'
+
+    # Pressure from hPa to kPa, must be between 85 and 110 kPa
+    data['pressure'] = data['pressure'] * 0.1
+    if not (all(data['pressure'] > 85.00) and all(data['pressure'] < 110.00)):
+        data = data[(data['pressure'] > 85.0) & (data['pressure'] < 110.0)]
+        result = 'Removed instances where pressure was lower then 85 or above 110 kPa'
+
+    # Humidity must be between 0 and 100%
+    if not (all(data['humidity'] >= 0) and all(data['humidity'] <= 100)):
+        data = data[(data['humidity'] >= 0) & (data['humidity'] <= 100)]
+        print('Removed instances where humidity was lower then 0% or above 100%')
+
+    # Dew point must be between -33 and 35
+    if not (all(data['dew_point'] >= -33) and all(data['dew_point'] <= 35)):
+        data = data[(data['dew_point'] >= -33) & (data['dew_point'] <= 35)]
+        result = 'Removed instances where dew point was lower then -33 or above 35'
     
-    # if not all(data['pressure'] >= 85) and not all(data['pressure'] <= 110):
-    #     data = data[(data['pressure'] >= 85) & (data['pressure'] <= 110)]
-    # Print when data removed
+    # Windspeed must be between 0 and 110 m/s
+    if not (all(data['wind_speed'] >= 0) and all(data['wind_speed'] <= 115)):
+        data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
+        result = 'Removed instances where wind speed was lower then 0 or above 115 m/s'
     
-    # if not all(data['humidity'] >= 0) and not all(data['humidity'] <= 100):
-    #     data = data[(data['humidity'] >= 0) & (data['humidity'] <= 100)]
-    # Print when data removed
-    
-    # if not all(data['dew_point'] >= -33) and not all(data['dew_point'] <= 35):
-    #     data = data[(data['dew_point'] >= -33) & (data['dew_point'] <= 35)]
-    # Print when data removed
-    
-    # if not all(data['wind_speed'] >= 0) and not all(data['wind_speed'] <= 115):
-    #     data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
-    # Print when data removed
- 
+    return result
+
 
 def main():
+    
     weatherdata = pd.read_csv('~/Downloads/Guibergia_2022.csv')
 
     data = pd.DataFrame({
@@ -68,25 +80,26 @@ def main():
         "wind_speed": weatherdata['wind_speed'],
         "weather": weatherdata['weather_main']
     })
+    
     data.columns = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed", "weather"]
+    
+    # Validation of type of instances
+    result_type = validate_instance_type(data)
+    print(result_type)
+    
+    # Convert date column
     data['date_per_hour'] = pd.to_datetime(data['dt'], origin='1970-01-01', unit='s', utc=True)
-    data['date'] = data['date_per_hour'].dt.strftime('%Y-%m-%d')
+    data['date'] = pd.to_datetime(data['date_per_hour'].dt.strftime('%Y-%m-%d'))
     
-    # data['lat'] = pd.to_numeric(data['lat'])
-    # data['lon'] = pd.to_numeric(data['lon'])
-    # data['temp'] = pd.to_numeric(data['temp'])
-    # data['pressure'] = pd.to_numeric(data['pressure'])
-    # data['humidity'] = pd.to_numeric(data['humidity'])
-    # data['dew_point'] = pd.to_numeric(data['dew_point'])
-    # data['wind_speed'] = pd.to_numeric(data['wind_speed'])
+    # Validation of dataset contents
+    result = data_validation(data)
+    print(result)
     
-    # data = data.dropna()
- 
-    data['pressure'] = data['pressure'] / 10
-    
+    # Convert sunrise and sunset to human readable datetime
     data['sunrise'] = pd.to_datetime(data['sunrise'], origin='1970-01-01', unit='s', utc=True)
     data['sunset'] = pd.to_datetime(data['sunset'], origin='1970-01-01', unit='s', utc=True)
-    
+     
+    # Count direct sunshine hours per day
     unique_dates = data['date'].unique()
     
     for date in unique_dates:
@@ -94,6 +107,7 @@ def main():
         clear_count = sum(filtered_data['weather'] == "Clear")
         data.loc[data['date'] == date, "sunshine_hour"] = clear_count
     
+    # Create new dataframe
     df = pd.DataFrame({
         "date": data['date'].unique(),
         "lat": data.groupby('date')['lat'].min(),
@@ -108,18 +122,13 @@ def main():
         "pressure" : data.groupby('date')['pressure'].mean()
     })
     
-    # df = df.reset_index(drop=True)
-
-    # Convert the 'date' column to a datetime object
-    df['date'] = pd.to_datetime(df['date'])
-    
     # Add a new column 'day_of_year'
     df['day_of_year'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
     
-    
-    print("dataset processed")
+    print("Dataset Processed")
     
     return df
+
 
 if __name__ == "__main__":
     try:

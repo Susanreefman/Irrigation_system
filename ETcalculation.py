@@ -6,9 +6,6 @@ ET0
 Description: Calculation of ET0
 Author: Susan Reefman
 Date: 13/09/2023
-
-
-## TO DO: create import of df from main.py
 """
 
 # Import necessary modules
@@ -16,22 +13,32 @@ import sys
 import argparse
 import pandas as pd
 import math
-# import datasets
-import datetime 
-import pickle
-
  
-
-
 # Constants
-lat = 33.409193
-
-lng = -112.677836
-
+# lat = 33.409193
+# lng = -112.677836
 albedo = 0.23
 a_s = 0.25
 b_s = 0.50
-altitude = 301
+
+# Crocetta
+# altitude = 240
+
+# Guibergia
+altitude = 238
+
+# Sabena
+# altitude = 238
+
+# Azienda
+# altitude = 278
+
+# Cascina
+# altitude = 301
+
+# Martello
+# altitude = 323
+
 
 
 
@@ -161,8 +168,10 @@ def main(df):
         # Create a new dictionary with sorted date keys
         sorted_date_dict = {date.strftime('%d/%m/%Y'): round(value,6) for date, value in sorted_date_value_pairs}
     
-    df.to_csv('~/Downloads/result.csv', index=False)
+    result_file = '~/Downloads/result.csv'
+    df.to_csv(result_file, index=False)
     
+    print(f'Results saved in "{result_file}"')
     # print(sorted_date_dict)
 
     # print(ETo.values())
