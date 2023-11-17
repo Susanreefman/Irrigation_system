@@ -17,7 +17,6 @@ import matplotlib.pyplot as plt
 import read_json
 import os
 from scipy.signal import savgol_filter 
-   
     
 def remove_zeros(df):
     cdf = pd.DataFrame(columns=['date', 'average', 'doy'])
@@ -93,8 +92,9 @@ def interpolate(df):
 def main():
     
     path =  'D:/Nabu'
-    directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    directories.remove('NotUsed')
+    # directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+    # directories.remove('NotUsed')
+    directories = ['2021fullGuibergia']#, '2021fullGuibergia']
 
     for dirname in directories:
         print(f'field: {dirname}')
@@ -106,10 +106,6 @@ def main():
         left = df.iloc[:maxavg+1]
         right = df.iloc[maxavg:]
         right = right.reset_index()
-        
-        # Plot green first df
-        plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
-        # plt.scatter(right['doy'], right['average'], color='#00FF00', s=5)
         
         # Removing drops
         doy_l, datal = remove_continuous_drops_left(left['average'], left['doy'])
@@ -136,20 +132,35 @@ def main():
         # Smooth full curve
         merge = pd.DataFrame({'average': savgol_filter(merged['average'], window_length=10, polyorder=1), 'doy': merged['doy']})
         
-        
+        # Plot
+        plt.figure()
+        plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
         plt.plot(merge['doy'], merge['average'])
-
         plt.ylabel('NDVI')
-        plt.title(dirname)
+        plt.xlabel('Day in year')
+        plt.legend()
+        plt.title('NDVI' + dirname)
         # plt.xticks(list(range(0, len(merge['doy']), 30)))
         plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
-        plt.figure()
+        
+        # # Kc
+        # plt.figure()
+        merge['kc'] = 1.25 * merge['average'] + 0.2
+        # plt.plot(merge['doy'], merge['kc'])
+        # plt.grid()
+        # plt.ylabel('Kc')
+        # plt.title('Kc' + dirname)
+        # # plt.xticks(list(range(0, len(merge['doy']), 30)))
+        # plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2])
         
         # plt.show
         resultcsv = '~/Downloads/cleaned_ndvi_' + dirname + '.csv'
         merge.to_csv(resultcsv, index=False)
+        
+        filtered_df = merge[(merge['doy'] >= 100) & (merge['doy'] <= 300)]
+
   
-    return 0
+    return filtered_df
 
     
 if __name__ == "__main__":
