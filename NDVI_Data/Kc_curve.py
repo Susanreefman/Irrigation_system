@@ -6,90 +6,64 @@ Created on Fri Nov 17 12:12:29 2023
 """
 
 import pwlf
-from ndviprocessing import main
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import sys
+import pandas as pd
 
-from scipy.optimize import curve_fit
+def main():
+       
+    path = "C:/Users/Susan/Downloads/CleanedNDVI"
+    files = [f for f in os.listdir(path)]
+    print(files)
+    for file in files:
+        print(f'field: {file}')
+        df = pd.read_csv(os.path.join(path, file))
 
-def gaussian(x, amplitude, mean, stddev):
-    return amplitude * np.exp(-((x - mean) / stddev) ** 2)
+        maxavg = int(df['normal_avg'].idxmax())
 
+        start = df.iloc[maxavg]['doy']-80
+        end = df.iloc[maxavg]['doy']+50
+        
+        df = df[(df['doy'] >= start) & (df['doy'] <= end)]
 
-df = main()
+        df['kc'] = 1.25 * df['normal_avg'] + 0.2
+        
+        x = np.array(df['doy'])
+        y = np.array(df['kc'])
+        
+        # initialize piecewise linear fit with your x and y data
+        my_pwlf = pwlf.PiecewiseLinFit(x, y)
+        
+        # fit the data for four line segments
+        my_pwlf.fit(3)
+        
+        # predict for the determined points
+        xHat = np.linspace(min(x), max(x), num=1000)
+        yHat = my_pwlf.predict(xHat)
+        breakpoints = my_pwlf.fit_breaks
 
+        # plot the results
+        plt.figure()
+        plt.plot(x, y, '-', linewidth=0.5)
+        plt.plot(xHat, yHat, ':', linewidth=1.5)
+        plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
+        plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
+        for point in breakpoints:
+            plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')        
+        plt.ylabel('Kc')
+        plt.xlabel('doy')
+        plt.title(file)
 
-doy = df['doy']
-avg = df['average']
-kc = df['kc']
-
-print(df.to_string)
-
-
-# Fitting the Gaussian curve to the data
-initial_guess = [max(avg), np.mean(doy), np.std(doy)]  # Initial guess for curve fitting parameters
-params, covariance = curve_fit(gaussian, doy, avg, p0=initial_guess)
-
-new_avg = gaussian(doy, *params)
-
-# Plotting the data and the fitted curve
-plt.figure()
-plt.scatter(doy, avg, label='Data')
-plt.plot(doy, new_avg, color='red', label='Fitted Gaussian Curve')
-plt.xlabel('X-axis (Day of Year)')
-plt.ylabel('Y-axis (Average Value)')
-plt.legend()
-plt.title('Fitting Gaussian Curve to Data')
-plt.show()
-
-df['kc_new'] = 1.25 * new_avg + 0.2
-
-x = np.array(df['doy'])
-y = np.array(df['kc'])
-
-# initialize piecewise linear fit with your x and y data
-my_pwlf = pwlf.PiecewiseLinFit(x, y)
-
-# fit the data for four line segments
-res = my_pwlf.fit(4)
-
-# predict for the determined points
-xHat = np.linspace(min(x), max(x), num=10000)
-yHat = my_pwlf.predict(xHat)
-
-# # plot the results
-# plt.figure()
-# plt.plot(x, y, '-', linewidth=1.5)
-# plt.plot(xHat, yHat, ':', linewidth=1.5)
-# plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-# plt.ylabel('Kc')
+    return 0
 
 
-# plot the results
-plt.figure()
-plt.plot(x, y, '-', linewidth=1)
-# plt.plot(xHat, yHat, ':', linewidth=1)
-plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-plt.ylabel('Kc')
+    
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nScript terminated by the user.")
+        sys.exit(1)
 
-
-
-y_new = df['kc_new']
-pwlfs = pwlf.PiecewiseLinFit(x, y_new)
-
-# fit the data for four line segments
-ress = pwlfs.fit(4)
-
-# predict for the determined points
-x_Hat = np.linspace(min(x), max(x), num=10000)
-y_Hat = pwlfs.predict(x_Hat)
-
-# plot the results
-
-plt.plot(x, y_new, '--', linewidth=1)
-plt.plot(x_Hat, y_Hat, '-.', linewidth=1)
-plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-plt.ylabel('Kc')
-plt.xlabel('Day in year')
-plt.grid()
-plt.show()
