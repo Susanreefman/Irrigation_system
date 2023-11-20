@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import read_json
 import os
 from scipy.signal import savgol_filter 
+from scipy.optimize import curve_fit
+
     
 def remove_zeros(df):
     cdf = pd.DataFrame(columns=['date', 'average', 'doy'])
@@ -88,23 +90,43 @@ def interpolate(df):
     
     return merged
 
+
+def gaussian(x, amplitude, mean, stddev):
+    return amplitude * np.exp(-((x - mean) / stddev) ** 2)
+
+
     
 def main():
     
     path =  'D:/Nabu'
-    # directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    # directories.remove('NotUsed')
-    directories = ['2021fullGuibergia']#, '2021fullGuibergia']
+    directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+    directories.remove('NotUsed')
+    # directories = ['2021fullGuibergia']#, '2021fullGuibergia']
 
     for dirname in directories:
         print(f'field: {dirname}')
         dt = read_json.read_json(os.path.join(path, dirname))
         print(f'Datapoints in dataset: {len(dt["average"])}')
-        df = remove_zeros(dt)
-        maxavg = df['average'].idxmax()
+        df_filtered = remove_zeros(dt)
 
+        maxavg = int(df_filtered['average'].idxmax())
+        print(df_filtered.iloc[maxavg])
+
+        start = df_filtered.iloc[maxavg]['doy']-80
+        end = df_filtered.iloc[maxavg]['doy']+120
+
+        if end > 365:
+            end = max(df_filtered['doy'])
+        
+        df = df_filtered[(df_filtered['doy'] >= start) & (df_filtered['doy'] <= end)]
+        
+        df = df.reset_index()
+        df = df.drop('index', axis=1)
+        
+        maxavg = int(df['average'].idxmax())
         left = df.iloc[:maxavg+1]
         right = df.iloc[maxavg:]
+        
         right = right.reset_index()
         
         # Removing drops
@@ -112,8 +134,8 @@ def main():
         doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
         
         # Smooth left and right side curves
-        smleft = savgol_filter(datal, window_length=3, polyorder=1)
-        smright = savgol_filter(datar, window_length=3, polyorder=1)
+        smleft = savgol_filter(datal, window_length=2, polyorder=1)
+        smright = savgol_filter(datar, window_length=2, polyorder=1)
         
         # Create new dataframes
         left = pd.DataFrame({'average': smleft, 'doy': doy_l})
@@ -132,35 +154,31 @@ def main():
         # Smooth full curve
         merge = pd.DataFrame({'average': savgol_filter(merged['average'], window_length=10, polyorder=1), 'doy': merged['doy']})
         
+        x = np.array(merge['doy'])
+        y = np.array(merge['average'])
+        
+        # Fitting the Gaussian curve to the data
+        initial_guess = [np.max(y), x[np.argmax(y)], np.std(x)]  # Initial guess for curve fitting parameters
+        params, covariance = curve_fit(gaussian, x, y, p0=initial_guess)
+
+        merge['normal_avg'] = gaussian(merge['doy'], *params)
+        
         # Plot
         plt.figure()
         plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
         plt.plot(merge['doy'], merge['average'])
+        plt.plot(merge['doy'], merge['normal_avg'], color='#FF0000', linewidth=0.5)
         plt.ylabel('NDVI')
         plt.xlabel('Day in year')
         plt.legend()
         plt.title('NDVI' + dirname)
-        # plt.xticks(list(range(0, len(merge['doy']), 30)))
+        plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
         plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
         
-        # # Kc
-        # plt.figure()
-        merge['kc'] = 1.25 * merge['average'] + 0.2
-        # plt.plot(merge['doy'], merge['kc'])
-        # plt.grid()
-        # plt.ylabel('Kc')
-        # plt.title('Kc' + dirname)
-        # # plt.xticks(list(range(0, len(merge['doy']), 30)))
-        # plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1.1,1.2])
-        
-        # plt.show
-        resultcsv = '~/Downloads/cleaned_ndvi_' + dirname + '.csv'
+        resultcsv = '~/Downloads/CleanedNDVI/cleaned_ndvi_' + dirname + '.csv'
         merge.to_csv(resultcsv, index=False)
-        
-        filtered_df = merge[(merge['doy'] >= 100) & (merge['doy'] <= 300)]
-
   
-    return filtered_df
+    return 0
 
     
 if __name__ == "__main__":
