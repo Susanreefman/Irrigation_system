@@ -64,15 +64,28 @@ def remove_continuous_drops_left(data, date):
 def remove_continuous_drops_right(data, date):
     corrected_data = [data[0]]
     corrected_date = [date[0]]  # Start with the first value
+    in_drop = False  # Flag to indicate if we're in a continuous drop
+    drop_end_index = 0  # Index at the end of the last detected drop
+    drop_start_value = data[0]  # Value at the start of the last detected drop
 
     for i in range(1, len(data)):
-        drop_percentage = (data[i - 1] - data[i]) / data[i - 1] if data[i - 1] != 0 else 0
-        if drop_percentage > 0.2:
-            corrected_data.append(corrected_data[-1])  # Replace the dropped value
-            corrected_date.append(corrected_date[-1])
+        if in_drop:
+            # If we're in a drop, continue until the drop ends
+            if data[i] >= data[i - 1] or data[i] >= (drop_start_value * 0.80):
+                in_drop = False  # No longer in a drop
+                corrected_data.extend(data[drop_end_index:i])
+                corrected_date.extend(date[drop_end_index:i])
         else:
-            corrected_data.append(data[i])
-            corrected_date.append(date[i])
+            # Check for a potential drop (if the current value is less than the previous value)
+            if data[i] < data[i - 1]:
+                in_drop = True
+                drop_end_index = i - 1  # Set the drop end index
+                drop_start_value = data[i - 1]  # Set the starting value of the drop
+
+    # Add the remaining data points after the last drop (if any)
+    if drop_end_index < len(data) - 1:
+        corrected_data.extend(data[drop_end_index + 1:])
+        corrected_date.extend(date[drop_end_index + 1:])
 
     return corrected_date, corrected_data
 
@@ -94,6 +107,9 @@ def interpolate(df):
 def gaussian(x, amplitude, mean, stddev):
     return amplitude * np.exp(-((x - mean) / stddev) ** 2)
 
+# Define an exponential function
+def exponential(x, a, b):
+    return a * np.exp(b * x)
 
     
 def main():
@@ -108,6 +124,7 @@ def main():
         dt = read_json.read_json(os.path.join(path, dirname))
         print(f'Datapoints in dataset: {len(dt["average"])}')
         df_filtered = remove_zeros(dt)
+        # print(df_filtered.to_string())
 
         maxavg = int(df_filtered['average'].idxmax())
         print(df_filtered.iloc[maxavg])
@@ -134,8 +151,8 @@ def main():
         doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
         
         # Smooth left and right side curves
-        smleft = savgol_filter(datal, window_length=2, polyorder=1)
-        smright = savgol_filter(datar, window_length=2, polyorder=1)
+        smleft = savgol_filter(datal, window_length=5, polyorder=1)
+        smright = savgol_filter(datar, window_length=5, polyorder=1)
         
         # Create new dataframes
         left = pd.DataFrame({'average': smleft, 'doy': doy_l})
@@ -153,21 +170,31 @@ def main():
         
         # Smooth full curve
         merge = pd.DataFrame({'average': savgol_filter(merged['average'], window_length=10, polyorder=1), 'doy': merged['doy']})
-        
+        # merge = merged
         x = np.array(merge['doy'])
         y = np.array(merge['average'])
         
         # Fitting the Gaussian curve to the data
         initial_guess = [np.max(y), x[np.argmax(y)], np.std(x)]  # Initial guess for curve fitting parameters
         params, covariance = curve_fit(gaussian, x, y, p0=initial_guess)
+        
+        popt, pcov = curve_fit(exponential, x, y)
+        
+        # Generate points for the fitted curve
+        x_fit = np.linspace(min(x), max(x), 10)
+        y_fit = exponential(x_fit, *popt)
+
 
         merge['normal_avg'] = gaussian(merge['doy'], *params)
+        
+        print(merge.head())
         
         # Plot
         plt.figure()
         plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
         plt.plot(merge['doy'], merge['average'])
         plt.plot(merge['doy'], merge['normal_avg'], color='#FF0000', linewidth=0.5)
+        # plt.plot(x_fit, y_fit, color='red', label='Fitted Exponential Curve')
         plt.ylabel('NDVI')
         plt.xlabel('Day in year')
         plt.legend()

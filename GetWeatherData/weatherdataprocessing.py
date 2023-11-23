@@ -65,7 +65,8 @@ def data_validation(data):
 
 def main():
     
-    weatherdata = pd.read_csv('~/Downloads/Guibergia_2022.csv')
+    weatherdata = pd.read_csv('~/Downloads/Martello_2020.csv')
+    
 
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
