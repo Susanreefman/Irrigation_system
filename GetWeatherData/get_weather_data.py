@@ -26,16 +26,19 @@ configure()
 api_key = os.getenv('api_key')
 
 # Start date in unix timestamp
-date = 1596765600
+date = 1627358400
+
+#1april 2021= 1617228000
+	
 
 # 1-1-2022
-# date = 1640991600
+# date = 
 
 flat_data_list = []
 
 for i in range(800):
 
-    api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.6414139&lon=7.612580555555555&dt={date}&units=metric&appid={api_key}'
+    api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat=44.6406&lon=7.6075&dt={date}&units=metric&appid={api_key}'
     date += 3600
     response = requests.get(api_url)
 
@@ -72,7 +75,7 @@ for i in range(800):
 response.close()
 
 # Define path of output CSV file 
-csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_Martello2020_jul.csv' 
+csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_Guibergia2021_aug.csv' 
 
 # Write the data in the list to the CSV file
 with open(csv_file, 'w', newline='') as file:
