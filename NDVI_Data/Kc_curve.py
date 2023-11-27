@@ -8,25 +8,14 @@ Created on Fri Nov 17 12:12:29 2023
 import pwlf
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import os
 import sys
 import pandas as pd
-import statsmodels.api as sm
-from plotnine import ggplot, aes, geom_point
-from scipy.optimize import curve_fit
-from sklearn import linear_model
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
-from scipy.interpolate import interp1d
 
-
-
-# Define the function for the linear equation Kc = a * average + b
-def linear_equation(average, a, b):
-    return a * average + b
 
 def pwlf_function(x, y):
-    # initialize piecewise linear fit with your x and y data
+    """ initialize piecewise linear fit with your x and y data"""
     my_pwlf = pwlf.PiecewiseLinFit(x, y)
         
     # fit the data for four line segments
@@ -40,8 +29,8 @@ def pwlf_function(x, y):
     
     return xHat, yHat, breakpoints.tolist()
 
-# Function to level certain parts of the curve
 def level_curve(k):
+    """ """
     values_to_update = list(k.values())
     
     for i in range(0, len(values_to_update), 2):
@@ -60,7 +49,7 @@ def level_curve(k):
     return k 
 
 def interpolate(k):
-    
+    """ """
     # Generate a range of days from the minimum to the maximum
     df = pd.DataFrame(list(k.items()), columns=['doy', 'Kc'])
     full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
@@ -77,13 +66,12 @@ def interpolate(k):
 def main():
        
     path = "C:/Users/Susan/Downloads/CleanedNDVI"
-    # files = [f for f in os.listdir(path)]
-    files = ['cleaned_ndvi_2020fullMartello.csv']#, 'cleaned_ndvi_2021fullGuibergia.csv', 'cleaned_ndvi_2021fullMartello.csv']
+    files = [f for f in os.listdir(path)]
+    # files = ['cleaned_ndvi_2020sabane.csv']#, 'cleaned_ndvi_2021fullGuibergia.csv', 'cleaned_ndvi_2021fullMartello.csv']
+    
     for file in files:
         print(f'field: {file}')
         df = pd.read_csv(os.path.join(path, file))
-
-        # maxavg = int(df['average'].idxmax())
         
         x = np.array(df['doy'])
         y = np.array(df['average'])
@@ -91,51 +79,51 @@ def main():
         xHat, yHat, breakpoints = pwlf_function(x,y)
         breakpoints = [round(point) for point in breakpoints]
 
-        # Kc = 1.25 * yHat + 0.2
-
         k = {}
         for i in breakpoints:
             k[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] + 0.2
             
-        # devstage = df[(df['doy'] >= round(breakpoints[1])) & (df['doy'] <= round(breakpoints[2]))]
-        # devstage= devstage.reset_index() 
-        # devstage = devstage.drop('index', axis=1)
-        # devstage = devstage.drop('normal_avg', axis=1)
-        # print(devstage.head())
-
-        print(k)
         k = level_curve(k)
-        k = interpolate(k)
-        print(k['Kc'].to_string())
-        print(k['doy'])
+        merged = interpolate(k)
+        
+        merged.to_csv('~/Downloads/Kc_'+file, index=False)
+        
+        # x_values = breakpoints
+        # y_values = 
+        # print(k)
+
+        # print(breakpoints)
         
         # plot the results
         plt.figure()
         plt.plot(x, y, '-', linewidth=0.5)
         plt.plot(xHat, yHat, ':', linewidth=1.5)
         plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        plt.xticks(list(range(90, 300, 10)),rotation=45, ha='right')#, ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
+        # plt.xticks(list(range(90, 300, 30)),['Mar','Apr','May', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
         for point in breakpoints:
-            # print(point)
-            plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')   
+            plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')
         plt.grid()
         plt.ylabel('NDVI')
         plt.xlabel('doy')
         plt.title(file)  
         
-        
         plt.figure()
-        plt.plot(k['doy'], k['Kc'])
+        plt.plot(merged['doy'], merged['Kc'])
+        
+        for kx, ky in zip (k.keys(), k.values()):
+            # label = "{:.2f}".format(kx)
+            plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
+        # plt.scatter(k.keys(), k.values(), label=k.values())
         plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        # plt.xticks(list(range(round(k['doy'].min() / 10) * 10, k['doy'].max(), 30)),rotation=45, ha='right')
-        plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
+        # plt.xticks(list(range(90, 330, 30)), ['Apr','May', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
         for point in breakpoints:
-            plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')
-        plt.text(110, 0.1, 'ini', color='darkgray', fontsize=8)
-        plt.text(140, 0.1, 'dev', color='darkgray', fontsize=8)
+            plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
+        plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
+        plt.text(150, 0.1, 'dev', color='darkgray', fontsize=8)
         plt.text(200, 0.1, 'mid', color='darkgray', fontsize=8)
-        plt.text(240, 0.1, 'end', color='darkgray', fontsize=8)
-        # plt.grid()
+        plt.text(250, 0.1, 'end', color='darkgray', fontsize=8)
         plt.ylabel('Kc')
         plt.xlabel('doy')
         plt.title(file)  

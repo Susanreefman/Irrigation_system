@@ -114,22 +114,24 @@ def exponential(x, a, b):
     
 def main():
     
-    path =  'D:/Nabu'
-    directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    directories.remove('NotUsed')
-    # directories = ['2021fullGuibergia']#, '2021fullGuibergia']
+    path =  'D:/Nabu/Crosetto/'
+    # directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+    # directories.remove('NotUsed')
+    directories = ['Crosetto_2019.csv', 'Crosetto_2020.csv', 'Crosetto_2021.csv']
 
     for dirname in directories:
         print(f'field: {dirname}')
-        dt = read_json.read_json(os.path.join(path, dirname))
+        # dt = read_json.read_json(os.path.join(path, dirname))
+        dt = read_json.read_csv(os.path.join(path, dirname))
         print(f'Datapoints in dataset: {len(dt["average"])}')
+        
+        print(dt.to_string())
+        
         df_filtered = remove_zeros(dt)
-        # print(df_filtered.to_string())
 
         maxavg = int(df_filtered['average'].idxmax())
-        print(df_filtered.iloc[maxavg])
 
-        start = df_filtered.iloc[maxavg]['doy']-80
+        start = df_filtered.iloc[maxavg]['doy']-75
         end = df_filtered.iloc[maxavg]['doy']+120
 
         if end > 365:
@@ -165,36 +167,13 @@ def main():
         print(f'After interpolating: left side of curve {interpolate_left.shape}, right side of curve {interpolate_right.shape}')
 
         # Merge left and right side of curve to new dataframe
-        merged = pd.concat([interpolate_left, interpolate_right], axis=0)
-        print(f'shape of dataframe: {merged.shape}')
-        
-        # Smooth full curve
-        merge = pd.DataFrame({'average': savgol_filter(merged['average'], window_length=10, polyorder=1), 'doy': merged['doy']})
-        # merge = merged
-        x = np.array(merge['doy'])
-        y = np.array(merge['average'])
-        
-        # Fitting the Gaussian curve to the data
-        initial_guess = [np.max(y), x[np.argmax(y)], np.std(x)]  # Initial guess for curve fitting parameters
-        params, covariance = curve_fit(gaussian, x, y, p0=initial_guess)
-        
-        popt, pcov = curve_fit(exponential, x, y)
-        
-        # Generate points for the fitted curve
-        x_fit = np.linspace(min(x), max(x), 10)
-        y_fit = exponential(x_fit, *popt)
-
-
-        merge['normal_avg'] = gaussian(merge['doy'], *params)
-        
-        print(merge.head())
+        merge = pd.concat([interpolate_left, interpolate_right], axis=0)
+        print(f'shape of dataframe: {merge.shape}')
         
         # Plot
         plt.figure()
         plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
         plt.plot(merge['doy'], merge['average'])
-        plt.plot(merge['doy'], merge['normal_avg'], color='#FF0000', linewidth=0.5)
-        # plt.plot(x_fit, y_fit, color='red', label='Fitted Exponential Curve')
         plt.ylabel('NDVI')
         plt.xlabel('Day in year')
         plt.legend()
