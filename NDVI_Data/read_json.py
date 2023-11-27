@@ -42,3 +42,11 @@ def read_json(path_to_json):
     
     return jsons_data
     
+def read_csv(path_to_csv):
+    df = pd.read_csv(path_to_csv, usecols=['date', 'average'])
+    df['date'] = pd.to_datetime(df['date'],format='%d/%m/%Y')
+    df['doy'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
+    df = df.reset_index()
+    df = df.drop('index', axis=1)
+    return df
+    
