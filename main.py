@@ -10,8 +10,6 @@ Date: 30/10/2023
 
 # Import necessary modules
 import sys
-# import pandas as pd
-# import subprocess
 from GetWeatherData import weatherdataprocessing
 import ETcalculation
 
