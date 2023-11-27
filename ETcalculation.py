@@ -6,11 +6,12 @@ ET0
 Description: Calculation of ET0
 Author: Susan Reefman
 Date: 13/09/2023
+
+TO DO: add altitude API
 """
 
 # Import necessary modules
 import sys
-import argparse
 import pandas as pd
 import math
  
@@ -25,7 +26,7 @@ b_s = 0.50
 # altitude = 240
 
 # Guibergia
-altitude = 238
+# altitude = 238
 
 # Sabena
 # altitude = 238
@@ -37,7 +38,7 @@ altitude = 238
 # altitude = 301
 
 # Martello
-# altitude = 323
+altitude = 323
 
 
 
@@ -119,18 +120,13 @@ def main(df):
     
     """
     print("ET calculation started")
-    
-    ETo = dict()
-    newdict = dict()
-    wind=[] 
-    date, temp, vapour, wind_speed, solar, P, psy, esea = [], [], [], [], [], [], [], []
-    
+
     for index, row in df.iterrows():
         row = row.to_list()
         
-        date = row[0]
+        # date = row[0]
         lat = row[1]
-        lon = row[2]
+        # lon = row[2]
         Tmin = row[3]
         Tmax = row[4]
         Tmean = row[5]
@@ -150,31 +146,16 @@ def main(df):
         ea = vpd[1]
         
         solar_radiation = Rn(lat, doy, n, ea, Tmin, Tmax)
-        
     
         ET0 = penman_monteith(Tmean, delta, uz, solar_radiation, pressure, gamma, ea, es)
-        
-        ETo[date] = round(ET0,1)
-        
+                
         df.at[index, 'ET'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
         
-        # Convert date keys to datetime objects for sorting
-        date_objects = [date for date in ETo.keys()]
-    
-        # Create a list of sorted date-value pairs
-        sorted_date_value_pairs = sorted(zip(date_objects, ETo.values()))
-    
-        # Create a new dictionary with sorted date keys
-        sorted_date_dict = {date.strftime('%d/%m/%Y'): round(value,6) for date, value in sorted_date_value_pairs}
-    
-    result_file = '~/Downloads/result.csv'
+    result_file = '~/Downloads/Martello2021results.csv'
     df.to_csv(result_file, index=False)
     
     print(f'Results saved in "{result_file}"')
-    # print(sorted_date_dict)
-
-    # print(ETo.values())
         
 
 
