@@ -22,7 +22,7 @@ albedo = 0.23
 a_s = 0.25
 b_s = 0.50
 
-# Crocetta
+# Crosetto
 # altitude = 240
 
 # Guibergia
@@ -35,10 +35,10 @@ b_s = 0.50
 # altitude = 278
 
 # Cascina
-# altitude = 301
+altitude = 301
 
 # Martello
-altitude = 323
+# altitude = 323
 
 
 
@@ -152,7 +152,9 @@ def main(df):
         df.at[index, 'ET'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
         
-    result_file = '~/Downloads/Martello2021results.csv'
+    # files = ['Crosetto_2019_results', 'Crosetto_2020_results', 'Crosetto_2021_results', 'Crosetto_2022_results']
+    
+    result_file = '~/Downloads/Casina_2021_results.csv'
     df.to_csv(result_file, index=False)
     
     print(f'Results saved in "{result_file}"')

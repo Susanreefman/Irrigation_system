@@ -114,15 +114,16 @@ def exponential(x, a, b):
     
 def main():
     
-    path =  'D:/Nabu/Crosetto/'
-    # directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    # directories.remove('NotUsed')
-    directories = ['Crosetto_2019.csv', 'Crosetto_2020.csv', 'Crosetto_2021.csv']
+    path =  'D:/Nabu/'
+    directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+    directories.remove('NotUsed')
+    directories.remove('Skip')
+    # directories = ['Crosetto_2022.csv', 'Crosetto_2023.csv']
 
     for dirname in directories:
         print(f'field: {dirname}')
-        # dt = read_json.read_json(os.path.join(path, dirname))
-        dt = read_json.read_csv(os.path.join(path, dirname))
+        dt = read_json.read_json(os.path.join(path, dirname))
+        # dt = read_json.read_csv(os.path.join(path, dirname))
         print(f'Datapoints in dataset: {len(dt["average"])}')
         
         print(dt.to_string())
@@ -153,8 +154,8 @@ def main():
         doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
         
         # Smooth left and right side curves
-        smleft = savgol_filter(datal, window_length=5, polyorder=1)
-        smright = savgol_filter(datar, window_length=5, polyorder=1)
+        smleft = savgol_filter(datal, window_length=4, polyorder=1)
+        smright = savgol_filter(datar, window_length=4, polyorder=1)
         
         # Create new dataframes
         left = pd.DataFrame({'average': smleft, 'doy': doy_l})

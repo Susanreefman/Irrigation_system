@@ -65,10 +65,10 @@ def interpolate(k):
     
 def main():
        
-    path = "C:/Users/Susan/Downloads/CleanedNDVI"
+    path = "C:/Users/Susan/Downloads/CleanedNDVI/"
     files = [f for f in os.listdir(path)]
-    # files = ['cleaned_ndvi_2020sabane.csv']#, 'cleaned_ndvi_2021fullGuibergia.csv', 'cleaned_ndvi_2021fullMartello.csv']
-    
+    # files = ['cleaned_ndvi_Crosseto_2019.csv', 'cleaned_ndvi_Crosseto_2020.csv', 'cleaned_ndvi_Crosseto_2021.csv']
+
     for file in files:
         print(f'field: {file}')
         df = pd.read_csv(os.path.join(path, file))
