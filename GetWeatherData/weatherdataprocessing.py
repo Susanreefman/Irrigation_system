@@ -65,14 +65,8 @@ def data_validation(data):
 
 def main(file):
     
-    
-    # print(files)  
-    
-    # files = ['C:/Users/Susan/Documents/Datasets/Weatherdata/Crosetto_2019.csv', 'C:/Users/Susan/Documents/Datasets/Weatherdata/Crosetto_2020.csv', 'C:/Users/Susan/Documents/Datasets/Weatherdata/Crosetto_2021.csv', 'C:/Users/Susan/Documents/Datasets/Weatherdata/Crosetto_2022.csv']
-    
-    weatherdata = pd.read_csv(file)
-    # print(files[12])
-    
+    print(f'Weather data {file}')
+    weatherdata = pd.read_csv(file)    
 
     data = pd.DataFrame({
         "lat": weatherdata['lat'],

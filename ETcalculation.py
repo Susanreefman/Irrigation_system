@@ -74,7 +74,7 @@ def calculate_VPD(Tmin, Tmax, RHmin, RHmax):
     
 
 def calculate_delta(T_mean):
-    """Get vapour pressure from temperature """
+    """Get vapour pressure from temperature"""
     return 4098 * 0.6108 * math.exp(17.27 * T_mean / (T_mean + 237.3)) / ((T_mean + 237.3) ** 2)
     
 
@@ -151,13 +151,12 @@ def main(df, file):
                 
         df.at[index, 'ET'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
-        
-    # files = ['Crosetto_2019_results', 'Crosetto_2020_results', 'Crosetto_2021_results', 'Crosetto_2022_results']
-    
+            
     result_file = '~/Downloads/ETcResults/' + file
     df.to_csv(result_file, index=False)
     
     print(f'Results saved in "{result_file}"')
+    print('--------------------------------')
         
 
 

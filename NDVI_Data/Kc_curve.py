@@ -67,7 +67,6 @@ def main():
        
     path = "C:/Users/Susan/Downloads/CleanedNDVI/"
     files = [f for f in os.listdir(path)]
-    # files = ['cleaned_ndvi_Crosseto_2019.csv', 'cleaned_ndvi_Crosseto_2020.csv', 'cleaned_ndvi_Crosseto_2021.csv']
 
     for file in files:
         print(f'field: {file}')
@@ -88,19 +87,12 @@ def main():
         
         merged.to_csv('~/Downloads/Kc_'+file, index=False)
         
-        # x_values = breakpoints
-        # y_values = 
-        # print(k)
-
-        # print(breakpoints)
-        
         # plot the results
         plt.figure()
         plt.plot(x, y, '-', linewidth=0.5)
         plt.plot(xHat, yHat, ':', linewidth=1.5)
         plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-        # plt.xticks(list(range(90, 300, 30)),['Mar','Apr','May', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
         for point in breakpoints:
             plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')
         plt.grid()
@@ -112,11 +104,8 @@ def main():
         plt.plot(merged['doy'], merged['Kc'])
         
         for kx, ky in zip (k.keys(), k.values()):
-            # label = "{:.2f}".format(kx)
             plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
-        # plt.scatter(k.keys(), k.values(), label=k.values())
         plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        # plt.xticks(list(range(90, 330, 30)), ['Apr','May', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
         for point in breakpoints:
             plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
