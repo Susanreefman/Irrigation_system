@@ -23,7 +23,7 @@ a_s = 0.25
 b_s = 0.50
 
 # Crosetto
-# altitude = 240
+altitude = 240
 
 # Guibergia
 # altitude = 238
@@ -35,7 +35,7 @@ b_s = 0.50
 # altitude = 278
 
 # Cascina
-altitude = 301
+# altitude = 301
 
 # Martello
 # altitude = 323
@@ -115,7 +115,7 @@ def penman_monteith(T, delta, wind_speed, Rn, air_pressure, gamma, ea, es):
     
 
 
-def main(df):
+def main(df, file):
     """
     
     """
@@ -154,7 +154,7 @@ def main(df):
         
     # files = ['Crosetto_2019_results', 'Crosetto_2020_results', 'Crosetto_2021_results', 'Crosetto_2022_results']
     
-    result_file = '~/Downloads/Casina_2021_results.csv'
+    result_file = '~/Downloads/ETcResults/' + file
     df.to_csv(result_file, index=False)
     
     print(f'Results saved in "{result_file}"')
