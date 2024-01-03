@@ -23,7 +23,7 @@ a_s = 0.25
 b_s = 0.50
 
 # Crosetto
-altitude = 240
+# altitude = 240
 
 # Guibergia
 # altitude = 238
@@ -39,6 +39,9 @@ altitude = 240
 
 # Martello
 # altitude = 323
+
+# Zambia
+altitude = 1150
 
 
 
@@ -152,7 +155,7 @@ def main(df, file):
         df.at[index, 'ET'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
             
-    result_file = '~/Downloads/ETcResults/' + file
+    result_file = '~/Downloads/' + file
     df.to_csv(result_file, index=False)
     
     print(f'Results saved in "{result_file}"')

@@ -24,7 +24,7 @@ def main():
     """
     
     """
-    path = 'C:/Users/Susan/Documents/Datasets/Weatherdata/'
+    path = 'C:/Users/Susan/Documents/Datasets/Zambia/'
     
     files = os.listdir(path)
 

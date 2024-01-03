@@ -65,7 +65,7 @@ def interpolate(k):
     
 def main():
        
-    path = "C:/Users/Susan/Downloads/CleanedNDVIselectedfields/"
+    path = "C:/Users/Susan/Downloads/CleanedNDVIZambia/"
     files = [f for f in os.listdir(path)]
     # files = ['cleaned_ndvi_Crosseto_2019.csv', 'cleaned_ndvi_Crosseto_2020.csv', 'cleaned_ndvi_Crosseto_2021.csv']
 
@@ -81,11 +81,11 @@ def main():
 
         k = {}
         for i in breakpoints:
-            k[int(round(i))] = 1.181 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] -0.026
+            k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] -0.147
         k = level_curve(k)
         merged = interpolate(k)
         
-        merged.to_csv('~/Downloads/Kc_1.181'+file, index=False)
+        merged.to_csv('~/Downloads/Kc_1.34'+file, index=False)
         
         # # plot the results
         # plt.figure()
@@ -101,23 +101,23 @@ def main():
         # plt.xlabel('doy')
         # plt.title(file)  
         
-        # plt.figure()
-        # plt.plot(merged['doy'], merged['Kc'])
+        plt.figure()
+        plt.plot(merged['doy'], merged['Kc'])
         
-        # for kx, ky in zip (k.keys(), k.values()):
+        for kx, ky in zip (k.keys(), k.values()):
 
-        #     plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
-        # plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-        # for point in breakpoints:
-        #     plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
-        # plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
-        # plt.text(150, 0.1, 'dev', color='darkgray', fontsize=8)
-        # plt.text(200, 0.1, 'mid', color='darkgray', fontsize=8)
-        # plt.text(250, 0.1, 'end', color='darkgray', fontsize=8)
-        # plt.ylabel('Kc')
-        # plt.xlabel('doy')
-        # plt.title(file)  
+            plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
+        plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
+        for point in breakpoints:
+            plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
+        plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
+        plt.text(140, 0.1, 'dev', color='darkgray', fontsize=8)
+        plt.text(180, 0.1, 'mid', color='darkgray', fontsize=8)
+        plt.text(220, 0.1, 'end', color='darkgray', fontsize=8)
+        plt.ylabel('Kc')
+        plt.xlabel('doy')
+        plt.title(file)  
         
     return 0
 

@@ -60,7 +60,7 @@ def data_validation(data):
         data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
         result = 'Removed instances where wind speed was lower then 0 or above 115 m/s'
     
-    return result
+    return data, result
 
 
 def main(file):
@@ -93,7 +93,7 @@ def main(file):
     data['date'] = pd.to_datetime(data['date_per_hour'].dt.strftime('%Y-%m-%d'))
     
     # Validation of dataset contents
-    result = data_validation(data)
+    data, result = data_validation(data)
     print(result)
     
     # Convert sunrise and sunset to human readable datetime
