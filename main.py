@@ -13,11 +13,14 @@ Version: 1.1
 import sys
 import os
 from GetWeatherData import weatherdataprocessing
-import ETcalculation
+import ET0calculation
 from NDVI_Data import read_json
 from NDVI_Data import ndviprocessing
 from NDVI_Data import Kc_curve
+import ETcCalculation
+
 import pandas as pd
+
 
 # Constants
 
@@ -29,6 +32,7 @@ def main():
     ##
     """
     
+    # ET0
     path_weather = 'C:/Users/Susan/Documents/Datasets/Zambia/'
     
     files = os.listdir(path_weather)
@@ -37,8 +41,9 @@ def main():
         name = file.split('.')[0]
         df = pd.read_csv(path_weather+file)
         df = weatherdataprocessing.main(df)
-        df_ET0 = ETcalculation.main(df, name)
-        
+        df_ET0 = ET0calculation.main(df, name)
+    
+    # NDVI 
     ## Change to database connection. NEEDED 'date' & 'average' based on date range and location   
     # path_ndvi = 'C:/Users/Susan/Documents/Datasets/Zambia/'
     # file_ndvi = 'data-1703829387865'
@@ -50,6 +55,11 @@ def main():
         df = read_json.read_csv(os.path.join(path, file))
         df_processed = ndviprocessing.main(df, name)
         df_Kc = Kc_curve.main(df_processed, name)
+
+    # ETc
+    ## Match correct dfs
+    # ETcCalculation.main(df1, df2)
+     
 
 
 if __name__ == "__main__":
