@@ -1,8 +1,12 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 17 12:12:29 2023
+Kc_curve
+Description: processing Kc curves
+Author: Susan Reefman
+Date: 17/11/2023
+Version:1
 
-@author: Susan
 """
 
 import pwlf
@@ -30,7 +34,7 @@ def pwlf_function(x, y):
     return xHat, yHat, breakpoints.tolist()
 
 def level_curve(k):
-    """ """
+    """ ## """
     values_to_update = list(k.values())
     
     for i in range(0, len(values_to_update), 2):
@@ -49,7 +53,7 @@ def level_curve(k):
     return k 
 
 def interpolate(k):
-    """ """
+    """ ## """
     # Generate a range of days from the minimum to the maximum
     df = pd.DataFrame(list(k.items()), columns=['doy', 'Kc'])
     full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
@@ -63,63 +67,44 @@ def interpolate(k):
     return merged
     
     
-def main():
-       
-    path = "C:/Users/Susan/Downloads/CleanedNDVIZambia/"
-    files = [f for f in os.listdir(path)]
-    # files = ['cleaned_ndvi_Crosseto_2019.csv', 'cleaned_ndvi_Crosseto_2020.csv', 'cleaned_ndvi_Crosseto_2021.csv']
+def main(df, file):
+    """ ## """
+    
+    x = np.array(df['doy'])
+    y = np.array(df['average'])
+    
+    xHat, yHat, breakpoints = pwlf_function(x,y)
+    breakpoints = [round(point) for point in breakpoints]
 
-    for file in files:
-        print(f'field: {file}')
-        df = pd.read_csv(os.path.join(path, file))
-        
-        x = np.array(df['doy'])
-        y = np.array(df['average'])
-        
-        xHat, yHat, breakpoints = pwlf_function(x,y)
-        breakpoints = [round(point) for point in breakpoints]
+    k = {}
+    for i in breakpoints:
+        k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] -0.147
+    k = level_curve(k)
+    merged = interpolate(k)
+    
+    # merged.to_csv('~/Downloads/Kc_'+file, index=False)
+    
+    plt.figure()
+    plt.plot(merged['doy'], merged['Kc'])
+    
+    for kx, ky in zip (k.keys(), k.values()):
 
-        k = {}
-        for i in breakpoints:
-            k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] -0.147
-        k = level_curve(k)
-        merged = interpolate(k)
+        plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
+    plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
+    for point in breakpoints:
+        plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
+    ## Text needs to be adjusted with breakpoints
+    plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
+    plt.text(140, 0.1, 'dev', color='darkgray', fontsize=8)
+    plt.text(180, 0.1, 'mid', color='darkgray', fontsize=8)
+    plt.text(220, 0.1, 'end', color='darkgray', fontsize=8)
+    plt.ylabel('Kc')
+    plt.xlabel('doy')
+    plt.title(file)
+    plt.savefig('C:/Users/Susan/Downloads/Test/Kc_' + file + '.png')
         
-        merged.to_csv('~/Downloads/Kc_1.34'+file, index=False)
-        
-        # # plot the results
-        # plt.figure()
-        # plt.plot(x, y, '-', linewidth=0.5)
-        # plt.plot(xHat, yHat, ':', linewidth=1.5)
-        # plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-        # # plt.xticks(list(range(90, 300, 30)),['Mar','Apr','May', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'], rotation=45, ha='right')
-        # for point in breakpoints:
-        #     plt.axvline(point, color='lightgray', linestyle='--', label='Breakpoint')
-        # plt.grid()
-        # plt.ylabel('NDVI')
-        # plt.xlabel('doy')
-        # plt.title(file)  
-        
-        plt.figure()
-        plt.plot(merged['doy'], merged['Kc'])
-        
-        for kx, ky in zip (k.keys(), k.values()):
-
-            plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
-        plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-        for point in breakpoints:
-            plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
-        plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
-        plt.text(140, 0.1, 'dev', color='darkgray', fontsize=8)
-        plt.text(180, 0.1, 'mid', color='darkgray', fontsize=8)
-        plt.text(220, 0.1, 'end', color='darkgray', fontsize=8)
-        plt.ylabel('Kc')
-        plt.xlabel('doy')
-        plt.title(file)  
-        
-    return 0
+    return merged
 
 
     

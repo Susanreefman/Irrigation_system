@@ -6,7 +6,7 @@ get_weater_data
 Description: Get weather data from Open Weather API
 Author: Susan Reefman
 Date: 23/09/2023
-
+Version: 1
 
 TO DO: add API for altitude
 """

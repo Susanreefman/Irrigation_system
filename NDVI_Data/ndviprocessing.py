@@ -6,21 +6,18 @@ ndviprocessing
 Description: Processing of NDVI values
 Author: Susan Reefman
 Date: 17/11/2023
-
+Version: 1.1
 """
 
 # Importing
 import sys
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import read_json
-import os
 from scipy.signal import savgol_filter 
-from scipy.optimize import curve_fit
 
     
 def remove_zeros(df):
+    """ ## """
     cdf = pd.DataFrame(columns=['date', 'average', 'doy'])
     for index, row in df.iterrows():
         avg = df['average'][index]
@@ -30,6 +27,7 @@ def remove_zeros(df):
 
 
 def remove_continuous_drops_left(data, date):
+    """ ## """
     corrected_data = [data[0]]
     corrected_date = [date[0]] # Start with the first value
     in_drop = False  # Flag to indicate if we're in a continuous drop
@@ -62,6 +60,7 @@ def remove_continuous_drops_left(data, date):
 
 
 def remove_continuous_drops_right(data, date):
+    """ ## """
     corrected_data = [data[0]]
     corrected_date = [date[0]]  # Start with the first value
     in_drop = False  # Flag to indicate if we're in a continuous drop
@@ -91,7 +90,7 @@ def remove_continuous_drops_right(data, date):
 
 
 def interpolate(df):
-    
+    """ ## """
     # Generate a range of days from the minimum to the maximum
     full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
     
@@ -104,90 +103,78 @@ def interpolate(df):
     return merged
 
 
-def gaussian(x, amplitude, mean, stddev):
-    return amplitude * np.exp(-((x - mean) / stddev) ** 2)
-
-# Define an exponential function
-def exponential(x, a, b):
-    return a * np.exp(b * x)
-
     
-def main():
+def main(df, file):
+    """ ## """
     
-    path = 'C:/Users/Susan/Downloads/ZambiaNDVI'
-    directories = [d for d in os.listdir(path)]
-    # directories = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-    # directories.remove('NotUsed')
-    #directories.remove('Skip')
-    # directories = ['Crosetto_2022.csv', 'Crosetto_2023.csv']
-    print(directories)
+    ## Add to log file 
+    #print(f'Datapoints in dataset: {len(df["average"])}')
+    
+    df_filtered = remove_zeros(df)
+    
+    maxavg = int(df_filtered['average'].idxmax())
 
-    for dirname in directories:
-        print(f'field: {dirname}')
-        #dt = read_json.read_json(os.path.join(path, dirname))
-        dt = read_json.read_csv(os.path.join(path, dirname))
-        print(f'Datapoints in dataset: {len(dt["average"])}')
-        
-        print(dt.to_string())
-        
-        df_filtered = remove_zeros(dt)
+    start = df_filtered.iloc[maxavg]['doy']-75
+    end = df_filtered.iloc[maxavg]['doy']+85
 
-        maxavg = int(df_filtered['average'].idxmax())
+    if end > 365:
+        end = max(df_filtered['doy'])
+    
+    df = df_filtered[(df_filtered['doy'] >= start) & (df_filtered['doy'] <= end)]
+    
+    df = df.reset_index()
+    df = df.drop('index', axis=1)
+    
+    maxavg = int(df['average'].idxmax())
+    left = df.iloc[:maxavg+1]
+    right = df.iloc[maxavg:]
+    
+    right = right.reset_index()
+    
+    # Removing drops
+    doy_l, datal = remove_continuous_drops_left(left['average'], left['doy'])
+    doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
+    
+    # Smooth left and right side curves
+    smleft = savgol_filter(datal, window_length=3, polyorder=1)
+    smright = savgol_filter(datar, window_length=3, polyorder=1)
+    
+    # Create new dataframes
+    left = pd.DataFrame({'average': smleft, 'doy': doy_l})
+    right = pd.DataFrame({'average': smright, 'doy': doy_r})
+    
+    ## Add to log file 
+    #print(f'After removing drops: left side of curve {left.shape}, right side of curve {right.shape}')
+    
+    # Interpolate datapoints
+    interpolate_left = interpolate(left)
+    interpolate_right = interpolate(right)
+    
+    ## Add to log file 
+    #print(f'After interpolating: left side of curve {interpolate_left.shape}, right side of curve {interpolate_right.shape}')
 
-        start = df_filtered.iloc[maxavg]['doy']-75
-        end = df_filtered.iloc[maxavg]['doy']+120
-
-        if end > 365:
-            end = max(df_filtered['doy'])
-        
-        df = df_filtered[(df_filtered['doy'] >= start) & (df_filtered['doy'] <= end)]
-        
-        df = df.reset_index()
-        df = df.drop('index', axis=1)
-        
-        maxavg = int(df['average'].idxmax())
-        left = df.iloc[:maxavg+1]
-        right = df.iloc[maxavg:]
-        
-        right = right.reset_index()
-        
-        # Removing drops
-        doy_l, datal = remove_continuous_drops_left(left['average'], left['doy'])
-        doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
-        
-        # Smooth left and right side curves
-        smleft = savgol_filter(datal, window_length=3, polyorder=1)
-        smright = savgol_filter(datar, window_length=3, polyorder=1)
-        
-        # Create new dataframes
-        left = pd.DataFrame({'average': smleft, 'doy': doy_l})
-        right = pd.DataFrame({'average': smright, 'doy': doy_r})
-        print(f'After removing drops: left side of curve {left.shape}, right side of curve {right.shape}')
-        
-        # Interpolate datapoints
-        interpolate_left = interpolate(left)
-        interpolate_right = interpolate(right)
-        print(f'After interpolating: left side of curve {interpolate_left.shape}, right side of curve {interpolate_right.shape}')
-
-        # Merge left and right side of curve to new dataframe
-        merge = pd.concat([interpolate_left, interpolate_right], axis=0)
-        print(f'shape of dataframe: {merge.shape}')
-        
-        # Plot
-        plt.figure()
-        plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
-        plt.plot(merge['doy'], merge['average'])
-        plt.ylabel('NDVI')
-        plt.xlabel('Day in year')
-        plt.legend()
-        plt.title('NDVI' + dirname)
-        plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
-        plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
-        
-        resultcsv = '~/Downloads/CleanedNDVIZambia/cleaned_ndvi_' + dirname + '.csv'
-        merge.to_csv(resultcsv, index=False)
-  
-    return 0
+    # Merge left and right side of curve to new dataframe
+    merge = pd.concat([interpolate_left, interpolate_right], axis=0)
+    
+    ## Add to log file 
+    #print(f'shape of dataframe: {merge.shape}')
+    
+    # Plot
+    plt.figure()
+    plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
+    plt.plot(merge['doy'], merge['average'])
+    plt.ylabel('NDVI')
+    plt.xlabel('Day in year')
+    ## Look if legend is necessary
+    #plt.legend()
+    plt.title('NDVI' + file)
+    plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
+    plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
+    plt.savefig('C:/Users/Susan/Downloads/Test/NDVI_' + file + '.png')
+    
+    ## Add saving png statement to log file 
+    
+    return merge
 
     
 if __name__ == "__main__":
@@ -196,3 +183,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nScript terminated by the user.")
         sys.exit(1)
+

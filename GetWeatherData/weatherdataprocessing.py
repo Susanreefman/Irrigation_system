@@ -5,6 +5,7 @@ Weatherdataprocessing
 Description: functions to process weather data.
 Author: Susan Reefman
 Date: 30/10/2023
+Version: 1.1
 """
 
 import sys
@@ -63,11 +64,12 @@ def data_validation(data):
     return data, result
 
 
-def main(file):
+def main(weatherdata):
+    """ ## """
     
-    print(f'Weather data {file}')
-    weatherdata = pd.read_csv(file)    
-
+    ## Add to log file 
+    #print(f'Weather data {file}')
+    
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
         "lon": weatherdata['lon'],
@@ -86,7 +88,8 @@ def main(file):
     
     # Validation of type of instances
     result_type = validate_instance_type(data)
-    print(result_type)
+    ## Add to log file 
+    #print(result_type)
     
     # Convert date column
     data['date_per_hour'] = pd.to_datetime(data['dt'], origin='1970-01-01', unit='s', utc=True)
@@ -94,7 +97,8 @@ def main(file):
     
     # Validation of dataset contents
     data, result = data_validation(data)
-    print(result)
+    ## Add to log file 
+    #print(result)
     
     # Convert sunrise and sunset to human readable datetime
     data['sunrise'] = pd.to_datetime(data['sunrise'], origin='1970-01-01', unit='s', utc=True)
@@ -126,7 +130,8 @@ def main(file):
     # Add a new column 'day_of_year'
     df['day_of_year'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
     
-    print("Dataset Processed")
+    ## Add to log file
+    #print("Dataset Processed")
     
     return df
 
