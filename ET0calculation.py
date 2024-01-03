@@ -6,6 +6,7 @@ ET0
 Description: Calculation of ET0
 Author: Susan Reefman
 Date: 13/09/2023
+Version:1.1
 
 TO DO: add altitude API
 """
@@ -44,8 +45,6 @@ b_s = 0.50
 altitude = 1150
 
 
-
-
 # Functions
 def read_data(file_path):
     "Read file and create dataframe"
@@ -58,7 +57,6 @@ def read_data(file_path):
     except IOError as e:
         print(f"An error occurred while reading the file: {e}")
 
-
     grouped = df.groupby(df['date'])
 
     return grouped
@@ -70,7 +68,6 @@ def calculate_VPD(Tmin, Tmax, RHmin, RHmax):
     e0T_max = 0.618 * math.exp((17.27 * Tmax) / (Tmax + 237.3))
 
     es = (e0T_min + e0T_max) / 2
-    
     ea = ((e0T_min * RHmax) + (e0T_max * RHmin)) / 200
     
     return [es,ea]
@@ -82,6 +79,7 @@ def calculate_delta(T_mean):
     
 
 def Rn(lat, doy, n, ea, T_min, T_max):
+    """ ## """
     latitude = lat*math.pi/180
     
     d_r = 1 + 0.033 * math.cos(2 * math.pi * doy / 365)
@@ -122,7 +120,9 @@ def main(df, file):
     """
     
     """
-    print("ET calculation started")
+    
+    ## Add to log file
+    # print("ET calculation started")
 
     for index, row in df.iterrows():
         row = row.to_list()
@@ -155,12 +155,15 @@ def main(df, file):
         df.at[index, 'ET'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
             
-    result_file = '~/Downloads/' + file
+    ## Saving CSV needed? 
+    result_file = '~/Downloads/Test/ET0_' + file + '.csv'
     df.to_csv(result_file, index=False)
     
-    print(f'Results saved in "{result_file}"')
-    print('--------------------------------')
-        
+    ## Add to log file 
+    #print(f'Results saved in "{result_file}"')
+    #print('--------------------------------')
+    
+    return df
 
 
 if __name__ == "__main__":
