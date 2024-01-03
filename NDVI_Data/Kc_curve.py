@@ -78,7 +78,7 @@ def main(df, file):
 
     k = {}
     for i in breakpoints:
-        k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] -0.147
+        k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] - 0.147
     k = level_curve(k)
     merged = interpolate(k)
     
