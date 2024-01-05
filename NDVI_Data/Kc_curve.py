@@ -26,7 +26,7 @@ def pwlf_function(x, y):
     my_pwlf.fit(5)
         
     # predict for the determined points
-    xHat = np.linspace(min(x), max(x), num=100)
+    xHat = np.linspace(min(x), max(x), num=150)
     yHat = my_pwlf.predict(xHat)
     xHat = [round(value) for value in xHat]
     breakpoints = my_pwlf.fit_breaks
@@ -78,7 +78,7 @@ def main(df, file):
 
     k = {}
     for i in breakpoints:
-        k[int(round(i))] = 2 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] - 0.147
+        k[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] + 0.2
     k = level_curve(k)
     merged = interpolate(k)
     
@@ -86,6 +86,7 @@ def main(df, file):
     
     plt.figure()
     plt.plot(merged['doy'], merged['Kc'])
+    plt.plot(df['doy'],df['average'])
     
     for kx, ky in zip (k.keys(), k.values()):
 
@@ -103,7 +104,8 @@ def main(df, file):
     plt.xlabel('doy')
     plt.title(file)
     plt.savefig('C:/Users/Susan/Downloads/Test/Kc_' + file + '.png')
-        
+    # plt.close()
+    
     return merged
 
 
