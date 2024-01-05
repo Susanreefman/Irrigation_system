@@ -26,39 +26,41 @@ import pandas as pd
 
 # Functions
 
-
 def main():
-    """
-    ##
-    """
     
-    # ET0
-    path_weather = 'C:/Users/Susan/Documents/Datasets/Zambia/'
-    
-    files = os.listdir(path_weather)
+    ## Change to database connection per location and date range
+    path_weather = 'C:/Users/Susan/Downloads/Weatherdatafields/'
+    path_ndvi = 'C:/Users/Susan/Downloads/NDVIfields/'
 
-    for file in files:
-        name = file.split('.')[0]
-        df = pd.read_csv(path_weather+file)
-        df = weatherdataprocessing.main(df)
-        df_ET0 = ET0calculation.main(df, name)
-    
-    # NDVI 
-    ## Change to database connection. NEEDED 'date' & 'average' based on date range and location   
-    # path_ndvi = 'C:/Users/Susan/Documents/Datasets/Zambia/'
-    # file_ndvi = 'data-1703829387865'
-    
-    path = 'C:/Users/Susan/Downloads/Zambia/ZambiaNDVI'
-    files = [f for f in os.listdir(path)]
-    for file in files:
-        name = file.split('.')[0]
-        df = read_json.read_csv(os.path.join(path, file))
-        df_processed = ndviprocessing.main(df, name)
-        df_Kc = Kc_curve.main(df_processed, name)
+    weather_files = os.listdir(path_weather)
+    ndvi_files = os.listdir(path_ndvi)
 
-    # ETc
-    ## Match correct dfs
-    # ETcCalculation.main(df1, df2)
+    # ET0 calculation from weather data
+    for weather_file in weather_files:
+        weather_name = weather_file.split('.')[0]
+        weather_df = pd.read_csv(os.path.join(path_weather, weather_file))
+        weather_df = weatherdataprocessing.main(weather_df)
+        df_ET0 = ET0calculation.main(weather_df, weather_name)
+        
+        # Match NDVI data for the same field
+        matching_ndvi = [ndvi_file for ndvi_file in ndvi_files if ndvi_file.split('.')[0] == weather_name]
+        
+        # Kc curve calculations from NDVI data
+        if matching_ndvi:
+            ndvi_file = matching_ndvi[0]
+            ndvi_name = ndvi_file.split('.')[0]
+            ndvi_df = pd.read_csv(os.path.join(path_ndvi, ndvi_file), usecols=['average', 'doy'])
+            # df_processed = ndviprocessing.main(df, name)
+            ## Change ndvi_df to df_processed
+            df_Kc = Kc_curve.main(ndvi_df, ndvi_name)
+            
+            # Merge data based on day_of_year and doy
+            data = pd.merge(df_ET0, df_Kc, left_on='day_of_year', right_on='doy', suffixes=('_ET0', '_Kc'))
+            
+            #ETc calculation
+            ETcCalculation.main(data, ndvi_name)        
+    
+    return 0
      
 
 

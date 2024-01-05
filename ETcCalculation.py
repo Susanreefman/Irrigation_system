@@ -12,13 +12,22 @@ Version:1
 import os
 import sys
 import pandas as pd
+import matplotlib.pyplot as plt
 
-def main(df1, df2):
+def main(data, name):
     """ """
     
-    ## ETc = ET0 * Kc
+    data['ETc'] = data['ET0'] * data['Kc']
     
-    ## Figure
+    data.to_csv('~/Downloads/Test/data_'+ name + '.csv', index=False)
+    
+    plt.figure()
+    plt.plot(data['doy'], data['ETc'])
+    plt.ylabel('ETc')
+    plt.xlabel('doy')
+    plt.title(name)
+    plt.savefig('C:/Users/Susan/Downloads/Test/ETc_' + name + '.png')
+    plt.close()
     
     return 0
 
