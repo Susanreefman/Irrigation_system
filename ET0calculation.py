@@ -23,28 +23,6 @@ albedo = 0.23
 a_s = 0.25
 b_s = 0.50
 
-# Crosetto
-# altitude = 240
-
-# Guibergia
-# altitude = 238
-
-# Sabena
-# altitude = 238
-
-# Azienda
-# altitude = 278
-
-# Cascina
-# altitude = 301
-
-# Martello
-# altitude = 323
-
-# Zambia
-altitude = 1150
-
-
 # Functions
 def read_data(file_path):
     "Read file and create dataframe"
@@ -62,6 +40,34 @@ def read_data(file_path):
     return grouped
 
 
+def get_altitude(file):
+    """Get altitude per location"""
+    ## Change to altitude API
+    file = int(file)
+    
+    #Cascina
+    if file == 1 or file == 2 or file == 3 or file == 4:
+        return 301
+        
+    # Crosetto
+    if file == 5 or file == 6 or file == 7 or file == 8:
+        return 240
+
+    # Guibergia
+    if file == 9 or file == 10 or file == 11 or file == 12:
+        return 238
+
+    # Sabena
+    if file == 15 or file == 16 or file == 17:
+        return 238
+
+    # Martello
+    if file == 13 or file == 14:
+        return 323
+    
+    # Zambia
+    #altitude = 1150
+
 def calculate_VPD(Tmin, Tmax, RHmin, RHmax):
     """ """
     e0T_min = 0.618 * math.exp((17.27 * Tmin) / (Tmin + 237.3))
@@ -78,7 +84,7 @@ def calculate_delta(T_mean):
     return 4098 * 0.6108 * math.exp(17.27 * T_mean / (T_mean + 237.3)) / ((T_mean + 237.3) ** 2)
     
 
-def Rn(lat, doy, n, ea, T_min, T_max):
+def Rn(lat, doy, n, ea, T_min, T_max, altitude):
     """ ## """
     latitude = lat*math.pi/180
     
@@ -148,11 +154,13 @@ def main(df, file):
         es = vpd[0]
         ea = vpd[1]
         
-        solar_radiation = Rn(lat, doy, n, ea, Tmin, Tmax)
+        altitude = get_altitude(file)
+
+        solar_radiation = Rn(lat, doy, n, ea, Tmin, Tmax, altitude)
     
         ET0 = penman_monteith(Tmean, delta, uz, solar_radiation, pressure, gamma, ea, es)
                 
-        df.at[index, 'ET'] = round(ET0,1)
+        df.at[index, 'ET0'] = round(ET0,1)
         df.at[index, 'solar'] = solar_radiation
             
     ## Saving CSV needed? 
