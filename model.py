@@ -50,21 +50,21 @@ def xgboost_test(xg_reg, X_new):
 
 def main():
 
-    data = pd.read_csv('combined_dataset2.csv')
-    new_data = pd.read_csv('datasettopredict.csv')
+    data = pd.read_csv('C:/Users/Susan/Downloads/data_to_train.csv')
+    new_data = pd.read_csv('C:/Users/Susan/Downloads/data_to_predict.csv')
 
     ## Add info from data to log file
     #print(data.head())
     #print(new_data.head())
 
     #Split the data into features and target variable
-    X = data[['field', 'date','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
+    X = data[['date','field','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
     y = data['ETc']
 
     xg_reg = xgboost_train(X,y)
     
     # Make predictions
-    X_new = new_data[['field', 'date','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
+    X_new = new_data[['date', 'field','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
     predictions = xgboost_test(xg_reg, X_new)
 
     # Add predicted ETc to dataframe
@@ -82,7 +82,8 @@ def main():
         plt.xlabel('date')
         plt.title(name)
         # plt.savefig('C:/Users/Susan/Downloads/Test/Kc_' + file + '.png')
-            
+    
+    new_data.to_csv('C:/Users/Susan/Downloads/predictedresults.csv', index=False)
 
     return 0 
 
