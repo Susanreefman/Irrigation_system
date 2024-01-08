@@ -133,18 +133,17 @@ def main(df, file):
     for index, row in df.iterrows():
         row = row.to_list()
         
-        # date = row[0]
-        lat = row[1]
-        # lon = row[2]
-        Tmin = row[3]
-        Tmax = row[4]
-        Tmean = row[5]
-        RHmin = row[6]
-        RHmax = row[7]
-        uz = row[8]
-        n = row[9]
-        pressure = row[10]
-        doy = row[11]
+        lat = row[0]
+        lon = row[1]
+        Tmin = row[2]
+        Tmax = row[3]
+        Tmean = row[4]
+        RHmin = row[5]
+        RHmax = row[6]
+        uz = row[7]
+        n = row[8]
+        pressure = row[9]
+        doy = row[10]
         
         delta = calculate_delta(Tmean)
         

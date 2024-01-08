@@ -71,14 +71,14 @@ def main(df, file):
     """ ## """
     
     x = np.array(df['doy'])
-    y = np.array(df['average'])
+    y = np.array(df['NDVI'])
     
     xHat, yHat, breakpoints = pwlf_function(x,y)
     breakpoints = [round(point) for point in breakpoints]
 
     k = {}
     for i in breakpoints:
-        k[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'average'].values[0] + 0.2
+        k[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'NDVI'].values[0] + 0.2
     k = level_curve(k)
     merged = interpolate(k)
     
@@ -86,7 +86,7 @@ def main(df, file):
     
     plt.figure()
     plt.plot(merged['doy'], merged['Kc'])
-    plt.plot(df['doy'],df['average'])
+    plt.plot(df['doy'],df['NDVI'])
     
     for kx, ky in zip (k.keys(), k.values()):
 

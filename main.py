@@ -29,30 +29,20 @@ import pandas as pd
 def main():
     
     ## Change to database connection per location and date range
-    path_weather = 'C:/Users/Susan/Downloads/Weatherdatafields/'
-    path_ndvi = 'C:/Users/Susan/Downloads/NDVIfields/'
+    path = 'C:/Users/Susan/Downloads/sample.csv'
+    field = 11
+    df = pd.read_csv(path)
 
-    weather_files = os.listdir(path_weather)
-    ndvi_files = os.listdir(path_ndvi)
 
     # ET0 calculation from weather data
-    for weather_file in weather_files:
-        weather_name = weather_file.split('.')[0]
-        weather_df = pd.read_csv(os.path.join(path_weather, weather_file))
-        weather_df = weatherdataprocessing.main(weather_df)
-        df_ET0 = ET0calculation.main(weather_df, weather_name)
-        
-        # Match NDVI data for the same field
-        matching_ndvi = [ndvi_file for ndvi_file in ndvi_files if ndvi_file.split('.')[0] == weather_name]
-        
-        # Kc curve calculations from NDVI data
-        if matching_ndvi:
-            ndvi_file = matching_ndvi[0]
-            ndvi_name = ndvi_file.split('.')[0]
-            ndvi_df = pd.read_csv(os.path.join(path_ndvi, ndvi_file), usecols=['average', 'doy'])
-            # df_processed = ndviprocessing.main(df, name)
+    # weatherdataprocessing.main(weather_df)
+    df = ET0calculation.main(df, field)
+                
+    # Kc curve calculations from NDVI data
+   
+    # ndviprocessing.main(df, name)
             ## Change ndvi_df to df_processed
-            df_Kc = Kc_curve.main(ndvi_df, ndvi_name)
+    df_Kc = Kc_curve.main(df, field)
             
             # Merge data based on day_of_year and doy
             data = pd.merge(df_ET0, df_Kc, left_on='day_of_year', right_on='doy', suffixes=('_ET0', '_Kc'))
