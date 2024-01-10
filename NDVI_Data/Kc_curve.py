@@ -56,6 +56,7 @@ def interpolate(k):
     """ ## """
     # Generate a range of days from the minimum to the maximum
     df = pd.DataFrame(list(k.items()), columns=['doy', 'Kc'])
+    
     full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
     
     # Merge to include all days in the range
@@ -63,11 +64,11 @@ def interpolate(k):
     
     # Interpolate the 'average' column
     merged['Kc'] = merged['Kc'].interpolate()
-    
+
     return merged
     
     
-def main(df, file):
+def main(df): 
     """ ## """
     
     x = np.array(df['doy'])
@@ -82,31 +83,9 @@ def main(df, file):
     k = level_curve(k)
     merged = interpolate(k)
     
-    # merged.to_csv('~/Downloads/Kc_'+file, index=False)
+    new_df = pd.merge(df, merged, on='doy', how='right')
     
-    plt.figure()
-    plt.plot(merged['doy'], merged['Kc'])
-    plt.plot(df['doy'],df['NDVI'])
-    
-    for kx, ky in zip (k.keys(), k.values()):
-
-        plt.annotate(kx, (kx,ky),textcoords="offset points",xytext=(0,10), ha='center')
-    plt.yticks([0,0.2,0.4,0.6,0.8,1,1.2])
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%b-%d'))
-    for point in breakpoints:
-        plt.axvline(point, color='lightgray', linestyle='--', label='breakpoint')
-    ## Text needs to be adjusted with breakpoints
-    plt.text(120, 0.1, 'ini', color='darkgray', fontsize=8)
-    plt.text(140, 0.1, 'dev', color='darkgray', fontsize=8)
-    plt.text(180, 0.1, 'mid', color='darkgray', fontsize=8)
-    plt.text(220, 0.1, 'end', color='darkgray', fontsize=8)
-    plt.ylabel('Kc')
-    plt.xlabel('doy')
-    plt.title(file)
-    plt.savefig('C:/Users/Susan/Downloads/Test/Kc_' + file + '.png')
-    # plt.close()
-    
-    return merged
+    return new_df
 
 
     

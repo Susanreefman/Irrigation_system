@@ -40,34 +40,6 @@ def read_data(file_path):
     return grouped
 
 
-def get_altitude(file):
-    """Get altitude per location"""
-    ## Change to altitude API
-    file = int(file)
-    
-    #Cascina
-    if file == 1 or file == 2 or file == 3 or file == 4:
-        return 301
-        
-    # Crosetto
-    if file == 5 or file == 6 or file == 7 or file == 8:
-        return 240
-
-    # Guibergia
-    if file == 9 or file == 10 or file == 11 or file == 12:
-        return 238
-
-    # Sabena
-    if file == 15 or file == 16 or file == 17:
-        return 238
-
-    # Martello
-    if file == 13 or file == 14:
-        return 323
-    
-    # Zambia
-    #altitude = 1150
-
 def calculate_VPD(Tmin, Tmax, RHmin, RHmax):
     """ """
     e0T_min = 0.618 * math.exp((17.27 * Tmin) / (Tmin + 237.3))
@@ -122,28 +94,26 @@ def penman_monteith(T, delta, wind_speed, Rn, air_pressure, gamma, ea, es):
     
 
 
-def main(df, file):
+def main(df):
     """
     
     """
     
     ## Add to log file
     # print("ET calculation started")
-
+    
     for index, row in df.iterrows():
-        row = row.to_list()
-        
-        lat = row[0]
-        lon = row[1]
-        Tmin = row[2]
-        Tmax = row[3]
-        Tmean = row[4]
-        RHmin = row[5]
-        RHmax = row[6]
-        uz = row[7]
-        n = row[8]
-        pressure = row[9]
-        doy = row[10]
+        lat = row['lat']
+        Tmin = row['Tmin']
+        Tmax = row['Tmax']
+        Tmean = row['Tmean']
+        RHmin = row['RHmin']
+        RHmax = row['RHmax']
+        uz = row['uz']
+        n = row['n']
+        pressure = row['pressure']
+        doy = row['doy']
+        altitude = row['z']
         
         delta = calculate_delta(Tmean)
         
@@ -153,8 +123,6 @@ def main(df, file):
         es = vpd[0]
         ea = vpd[1]
         
-        altitude = get_altitude(file)
-
         solar_radiation = Rn(lat, doy, n, ea, Tmin, Tmax, altitude)
     
         ET0 = penman_monteith(Tmean, delta, uz, solar_radiation, pressure, gamma, ea, es)
@@ -163,8 +131,7 @@ def main(df, file):
         df.at[index, 'solar'] = solar_radiation
             
     ## Saving CSV needed? 
-    result_file = '~/Downloads/Test/ET0_' + file + '.csv'
-    df.to_csv(result_file, index=False)
+
     
     ## Add to log file 
     #print(f'Results saved in "{result_file}"')

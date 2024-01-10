@@ -6,30 +6,17 @@ ETcCalculation
 Description: calculation of ETc
 Author: Susan Reefman
 Date: 03/01/2023
-Version:1
+Version:1.1
 """
 
-import os
 import sys
-import pandas as pd
-import matplotlib.pyplot as plt
 
-def main(data, name):
+def main(df):
     """ """
     
-    data['ETc'] = data['ET0'] * data['Kc']
+    df['ETc'] = df['ET0'] * df['Kc']
     
-    data.to_csv('~/Downloads/Test/data_'+ name + '.csv', index=False)
-    
-    plt.figure()
-    plt.plot(data['doy'], data['ETc'])
-    plt.ylabel('ETc')
-    plt.xlabel('doy')
-    plt.title(name)
-    plt.savefig('C:/Users/Susan/Downloads/Test/ETc_' + name + '.png')
-    plt.close()
-    
-    return 0
+    return df
 
 
 if __name__ == "__main__":

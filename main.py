@@ -11,44 +11,32 @@ Version: 1.1
 
 # Import necessary modules
 import sys
-import os
-from GetWeatherData import weatherdataprocessing
 import ET0calculation
-from NDVI_Data import read_json
-from NDVI_Data import ndviprocessing
 from NDVI_Data import Kc_curve
 import ETcCalculation
-
 import pandas as pd
 
 
-# Constants
-
-# Functions
 
 def main():
+    """ """
     
     ## Change to database connection per location and date range
     path = 'C:/Users/Susan/Downloads/sample.csv'
-    field = 11
+    field = '11'
     df = pd.read_csv(path)
 
-
     # ET0 calculation from weather data
-    # weatherdataprocessing.main(weather_df)
-    df = ET0calculation.main(df, field)
-                
+    df = ET0calculation.main(df)
+    
     # Kc curve calculations from NDVI data
-   
-    # ndviprocessing.main(df, name)
-            ## Change ndvi_df to df_processed
-    df_Kc = Kc_curve.main(df, field)
+    df_Kc = Kc_curve.main(df)
             
-            # Merge data based on day_of_year and doy
-            data = pd.merge(df_ET0, df_Kc, left_on='day_of_year', right_on='doy', suffixes=('_ET0', '_Kc'))
-            
-            #ETc calculation
-            ETcCalculation.main(data, ndvi_name)        
+    # ETc calculation
+    df_ETc = ETcCalculation.main(df_Kc)       
+
+    result_file = '~/Downloads/sampleresult_' + field + '.csv'
+    df_ETc.to_csv(result_file, index=False)
     
     return 0
      
