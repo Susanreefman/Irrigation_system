@@ -88,7 +88,7 @@ def main(weatherdata):
     data.columns = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed", "weather"]
     
     # Validation of type of instances
-    result_type = validate_instance_type(data)
+    data, result_type = validate_instance_type(data)
     ## Add to log file 
     #print(result_type)
     
