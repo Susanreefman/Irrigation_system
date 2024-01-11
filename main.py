@@ -3,7 +3,7 @@
 
 """
 main
-Description: main function
+Description: main function to calculate ETc from given input file, writing to given outputfile
 Author: Susan Reefman
 Date: 30/10/2023
 Version: 1.1
@@ -11,20 +11,64 @@ Version: 1.1
 
 # Import necessary modules
 import sys
+import pandas as pd
+import argparse
+
+# Import additional scripts
 import ET0calculation
 from NDVI_Data import Kc_curve
 import ETcCalculation
-import pandas as pd
 
+
+# Functions
+def parse_args():
+    """
+    parse command-line arguments for input and output files
+
+    Returns:
+        parser.parse_args()
+    """ 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--file",
+                        help="""The location and name to meteorological data in CSV format""",
+                        required=True)
+    parser.add_argument("-r", "--result",
+                        help="""The location and name result file in CSV format""",
+                        required=True)
+    return parser.parse_args()
+
+
+def read_data(file):
+    """
+    Read file and create pandas dataframe
+
+    Args:
+        file (str): filepath of input file
+
+    Returns:
+        df (pandas.Dataframe): dataframe with meteorological information from 
+        inputfile
+    """ 
+
+    try:
+        df = pd.read_csv(file)
+            
+    except FileNotFoundError:
+        print(f"File '{file}' not found.")
+    except IOError as e:
+        print(f"An error occurred while reading the file: {e}")
+
+    return df
 
 
 def main():
-    """ """
-    
-    ## Change to database connection per location and date range
-    path = 'C:/Users/Susan/Downloads/sample.csv'
-    field = '11'
-    df = pd.read_csv(path)
+    """
+    Main function from program, calling the scripts ET0calculation.py, 
+    Kc_curve.py and ETcCalculation.py
+    """
+    # Parse and read file to dataframe
+    args = parse_args()
+    df = read_data(args.file)
 
     # ET0 calculation from weather data
     df = ET0calculation.main(df)
@@ -34,9 +78,10 @@ def main():
             
     # ETc calculation
     df_ETc = ETcCalculation.main(df_Kc)       
-
-    result_file = '~/Downloads/sampleresult_' + field + '.csv'
-    df_ETc.to_csv(result_file, index=False)
+    
+    print(df_ETc)
+    # Save to CSV file
+    # df_ETc.to_csv(args.result, index=False)
     
     return 0
      

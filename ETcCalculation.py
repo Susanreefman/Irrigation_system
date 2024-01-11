@@ -12,8 +12,17 @@ Version:1.1
 import sys
 
 def main(df):
-    """ """
+    """
+    Main function of this script, calculating the actual evapotranspiration (ETc)
+
+    Args:
+        df (pandas.Dataframe): dataframe with information to calculate ETc
+
+    Returns:
+        df (pandas.Dataframe): dataframe with addition of ETc
+    """ 
     
+    # Calculate ETc and add to dataframe
     df['ETc'] = df['ET0'] * df['Kc']
     
     return df

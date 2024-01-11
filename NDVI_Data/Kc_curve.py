@@ -2,60 +2,91 @@
 # -*- coding: utf-8 -*-
 """
 Kc_curve
-Description: processing Kc curves
+Description: calculating Kc curve through piecewise linear fit method. Finding 
+breakpoints in NDVI values and converting those values to a Kc value. 
 Author: Susan Reefman
 Date: 17/11/2023
-Version:1
-
+Version:1.1
 """
 
+# Imports
 import pwlf
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import os
 import sys
 import pandas as pd
 
-
+# Functions
 def pwlf_function(x, y):
-    """ initialize piecewise linear fit with your x and y data"""
+    """
+    initialize piecewise linear fit to find breakpoints in the curve day in the 
+    year against NDVI values. Breakpoints are indicating growth stages in the
+    crop growth cycle.
+
+    Args:
+        x (np.array): array including day in the year values
+        y (np.array): array including NDVI values
+        
+    Returns:
+        breakpoints (list): list with the breakpoints in the Kc curve 
+        between the growth stages
+    """   
+
     my_pwlf = pwlf.PiecewiseLinFit(x, y)
         
-    # fit the data for four line segments
+    # fit the data for 4 line segments
     my_pwlf.fit(5)
-        
-    # predict for the determined points
-    xHat = np.linspace(min(x), max(x), num=150)
-    yHat = my_pwlf.predict(xHat)
-    xHat = [round(value) for value in xHat]
-    breakpoints = my_pwlf.fit_breaks
     
-    return xHat, yHat, breakpoints.tolist()
+    # find breakpoints in curve
+    breakpoints = [round(point) for point in my_pwlf.fit_breaks]
 
-def level_curve(k):
-    """ ## """
-    values_to_update = list(k.values())
+    return breakpoints
+
+
+def level_curve(curve):
+    """
+    Level the values between the breakpoints of the curve to get a Kc curve
+
+    Args:
+        curve (dict): dictionary with day in the year and Kc value for breakpoints
+        
+    Returns:
+        curve (dict): dictionary with day in the year and updated Kc value 
+        for breakpoints
+    """   
+    values_to_update = list(curve.values())
     
     for i in range(0, len(values_to_update), 2):
         value1 = values_to_update[i]
         value2 = values_to_update[i + 1]
     
-        average = (value1 + value2) / 2  # Calculate the average of values
+        # Calculate the average of values
+        average = (value1 + value2) / 2  
         values_to_update[i] = average
-        values_to_update[i + 1] = average  # Update both values with the average value
+        # Update both values with the average value
+        values_to_update[i + 1] = average  
     
     # Update the original dictionary with updated values
-    updated_values = list(k.keys())
+    updated_values = list(curve.keys())
     for i, key in enumerate(updated_values):
-        k[key] = values_to_update[i]
+        curve[key] = values_to_update[i]
     
-    return k 
+    return curve
 
-def interpolate(k):
-    """ ## """
+
+def interpolate(curve):
+    """
+    augmentation of data points between break points in curve
+    through interpolate for days that are not in dataframe
+
+    Args:
+        curve (dict): dictionary with day in the year and Kc value for breakpoints
+        
+    Returns:
+        merged (pandas.Dataframe): dataframe with day in the year and 
+        belonging Kc value
+    """   
     # Generate a range of days from the minimum to the maximum
-    df = pd.DataFrame(list(k.items()), columns=['doy', 'Kc'])
+    df = pd.DataFrame(list(curve.items()), columns=['doy', 'Kc'])
     
     full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
     
@@ -69,20 +100,35 @@ def interpolate(k):
     
     
 def main(df): 
-    """ ## """
+    """
+    Main function of this script, calculating Kc value for each date in 
+    pandas dataframe
+    
+    Args:
+        df(pandas.Dataframe): dataframe with meteorological information
+        
+    Returns:
+        new_df(pandas.Dataframe): dataframe with meterological information, 
+        ET0 and Kc value.
+    """
     
     x = np.array(df['doy'])
     y = np.array(df['NDVI'])
     
-    xHat, yHat, breakpoints = pwlf_function(x,y)
-    breakpoints = [round(point) for point in breakpoints]
+    breakpoints = pwlf_function(x,y)
 
-    k = {}
+    # Convert NDVI to Kc value
+    curve = {}
     for i in breakpoints:
-        k[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'NDVI'].values[0] + 0.2
-    k = level_curve(k)
-    merged = interpolate(k)
+        curve[int(round(i))] = 1.25 * df.loc[df['doy'] == int(round(i)), 'NDVI'].values[0] + 0.2
     
+    # Level line segments in curve
+    curve = level_curve(curve)
+    
+    # Interpolate points in line segment
+    merged = interpolate(curve)
+    
+    # Add Kc values to existing dataframe
     new_df = pd.merge(df, merged, on='doy', how='right')
     
     return new_df
