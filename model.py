@@ -119,10 +119,9 @@ def main():
     """
     args = parse_args()
 
+    ## Add info from data to log file
     data = pd.read_csv(args.train)
     new_data = pd.read_csv(args.predict)
-
-    ## Add info from data to log file
 
     # Split the data into features and target variable
     X = data[['date','field','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
@@ -134,7 +133,6 @@ def main():
     # Make ETc predictions on new data
     X_new = new_data[['date', 'field','Tmin','Tmax','Tmean','RHmin','RHmax','uz','n','day_of_year', 'ET0']]
     predictions = xgboost_test(xg_reg, X_new)
-    print(type(predictions))
 
     # Add predicted ETc to dataframe
     new_data['ETc'] = predictions
