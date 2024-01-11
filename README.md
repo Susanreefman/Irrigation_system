@@ -17,6 +17,9 @@ The script was developed in the language Python (version 3.7.9). Please follow t
 
 In addition, a necessary external package needs to be installed; [] (version ) is used to... After that, execute the following command on the command line:
 
+import pwlf
+
+
 ```bash
 $ pip install -r requirements.txt
 ```
