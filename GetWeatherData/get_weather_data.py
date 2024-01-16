@@ -11,10 +11,11 @@ Version: 1
 TO DO: add API for altitude
 """
 
-import requests
-import csv
-from dotenv import load_dotenv
 import os
+import csv
+import requests
+from dotenv import load_dotenv
+
 
 def configure():
     load_dotenv()
@@ -22,20 +23,20 @@ def configure():
 
 configure()
 
-# Get api key from config file 
+# Get api key from config file
 api_key = os.getenv('api_key')
 
 # Start date in unix timestamp
-date = 1660827600
+date = 1663164000
 
 # Coordinates
-latitude = 44.674	
+latitude = 44.674
 longitude = 7.6951
 
 
 flat_data_list = []
 
-for i in range(2637): 
+for i in range(1133):
 
     api_url = f'https://api.openweathermap.org/data/3.0/onecall/timemachine?lat={latitude}&lon={longitude}&dt={date}&units=metric&appid={api_key}'
     date += 3600
@@ -65,16 +66,16 @@ for i in range(2637):
             'weather_description': data['data'][0]['weather'][0]['description'],
             'weather_icon': data['data'][0]['weather'][0]['icon']
         }
-        
+
         flat_data_list.append(flat_data)
-      
+
     else:
         print(f"Error: {response.status_code}")
-        
+
 response.close()
 
-# Define path of output CSV file 
-csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_cascina2022.csv' 
+# Define path of output CSV file
+csv_file = 'C:/Users/Susan/Documents/Datasets/weather_data_cascina2022.csv'
 
 # Write the data in the list to the CSV file
 with open(csv_file, 'w', newline='') as file:
@@ -82,5 +83,4 @@ with open(csv_file, 'w', newline='') as file:
     writer = csv.DictWriter(file, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerows(flat_data_list)
-
 

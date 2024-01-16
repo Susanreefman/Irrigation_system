@@ -16,21 +16,22 @@ import pandas as pd
 def validate_instance_type(data):
     """Validate data """
     flag = True
-    colnames = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed"]
+    colnames = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure",
+                "humidity", "dew_point", "wind_speed"]
     try:
         for i in colnames:
             data[i] = pd.to_numeric(data[i], errors='raise')
-        
+
     except ValueError:
         for i in colnames:
             data[i] = pd.to_numeric(data[i], errors='coerce')
         data = data.dropna()
         flag = False
-    
+
     if flag == True:
         return 'Instance types validated, no instances removed'
-    else:
-        return 'Rows of the columns where instances are not numeric are deleted'
+
+    return 'Rows of the columns where instances are not numeric are deleted'
 
 
 def data_validation(data):
@@ -56,21 +57,23 @@ def data_validation(data):
     if not (all(data['dew_point'] >= -33) and all(data['dew_point'] <= 35)):
         data = data[(data['dew_point'] >= -33) & (data['dew_point'] <= 35)]
         result = 'Removed instances where dew point was lower then -33 or above 35'
-    
+
     # Windspeed must be between 0 and 110 m/s
     if not (all(data['wind_speed'] >= 0) and all(data['wind_speed'] <= 115)):
         data = data[(data['wind_speed'] >= 0) & (data['wind_speed'] <= 115)]
         result = 'Removed instances where wind speed was lower then 0 or above 115 m/s'
-    
+
     return data, result
 
 
-def main(weatherdata):
+def main():
     """ ## """
-    
-    ## Add to log file 
+
+    weatherdata = pd.read_csv('C:/Users/Susan/Downloads/4.csv')
+
+    ## Add to log file
     #print(f'Weather data {file}')
-    
+
     data = pd.DataFrame({
         "lat": weatherdata['lat'],
         "lon": weatherdata['lon'],
@@ -84,35 +87,45 @@ def main(weatherdata):
         "wind_speed": weatherdata['wind_speed'],
         "weather": weatherdata['weather_main']
     })
-    
-    data.columns = ["lat", "lon", "dt", "sunrise", "sunset", "temp", "pressure", "humidity", "dew_point", "wind_speed", "weather"]
-    
+
+    data.columns = ["lat", "lon", "dt", "sunrise", "sunset", "temp",
+                    "pressure", "humidity", "dew_point", "wind_speed", "weather"]
+
     # Validation of type of instances
-    data, result_type = validate_instance_type(data)
-    ## Add to log file 
+    result_type = validate_instance_type(data)
+    ## Add to log file
     #print(result_type)
-    
+
     # Convert date column
-    data['date_per_hour'] = pd.to_datetime(data['dt'], origin='1970-01-01', unit='s', utc=True)
+    data['date_per_hour'] = pd.to_datetime(data['dt'],
+                                           origin='1970-01-01',
+                                           unit='s',
+                                           utc=True)
     data['date'] = pd.to_datetime(data['date_per_hour'].dt.strftime('%Y-%m-%d'))
-    
+
     # Validation of dataset contents
     data, result = data_validation(data)
-    ## Add to log file 
+    ## Add to log file
     #print(result)
-    
+
     # Convert sunrise and sunset to human readable datetime
-    data['sunrise'] = pd.to_datetime(data['sunrise'], origin='1970-01-01', unit='s', utc=True)
-    data['sunset'] = pd.to_datetime(data['sunset'], origin='1970-01-01', unit='s', utc=True)
-     
+    data['sunrise'] = pd.to_datetime(data['sunrise'],
+                                     origin='1970-01-01',
+                                     unit='s',
+                                     utc=True)
+    data['sunset'] = pd.to_datetime(data['sunset'],
+                                    origin='1970-01-01',
+                                    unit='s',
+                                    utc=True)
+
     # Count direct sunshine hours per day
     unique_dates = data['date'].unique()
-    
+
     for date in unique_dates:
         filtered_data = data[(data['date'] == date) & (data['date_per_hour'] >= data['sunrise']) & (data['date_per_hour'] <= data['sunset'])]
         clear_count = sum(filtered_data['weather'] == "Clear")
         data.loc[data['date'] == date, "sunshine_hour"] = clear_count
-    
+
     # Create new dataframe
     df = pd.DataFrame({
         "date": data['date'].unique(),
@@ -127,13 +140,14 @@ def main(weatherdata):
         "n" :data.groupby('date')['sunshine_hour'].min(),
         "pressure" : data.groupby('date')['pressure'].mean()
     })
-    
+
     # Add a new column 'day_of_year'
-    df['day_of_year'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
-    
+    df['doy'] = df['date'].apply(lambda x: x.timetuple().tm_yday)
+
     ## Add to log file
     #print("Dataset Processed")
-    
+    df.to_csv('C:/Users/Susan/Downloads/4res.csv', index=False)
+
     return df
 
 

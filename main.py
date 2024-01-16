@@ -11,8 +11,8 @@ Version: 1.1
 
 # Import necessary modules
 import sys
-import pandas as pd
 import argparse
+import pandas as pd
 
 # Import additional scripts
 import ET0calculation
@@ -27,7 +27,7 @@ def parse_args():
 
     Returns:
         parser.parse_args()
-    """ 
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--file",
                         help="""The location and name to meteorological data in CSV format""",
@@ -46,13 +46,13 @@ def read_data(file):
         file (str): filepath of input file
 
     Returns:
-        df (pandas.Dataframe): dataframe with meteorological information from 
+        df (pandas.Dataframe): dataframe with meteorological information from
         inputfile
-    """ 
+    """
 
     try:
         df = pd.read_csv(file)
-            
+
     except FileNotFoundError:
         print(f"File '{file}' not found.")
     except IOError as e:
@@ -63,7 +63,7 @@ def read_data(file):
 
 def main():
     """
-    Main function from program, calling the scripts ET0calculation.py, 
+    Main function from program, calling the scripts ET0calculation.py,
     Kc_curve.py and ETcCalculation.py
     """
     # Parse and read file to dataframe
@@ -72,19 +72,20 @@ def main():
 
     # ET0 calculation from weather data
     df = ET0calculation.main(df)
-    
+    df.to_csv(args.result, index=False)
+
     # Kc curve calculations from NDVI data
     df_Kc = Kc_curve.main(df)
-            
+
     # ETc calculation
-    df_ETc = ETcCalculation.main(df_Kc)       
-    
-    print(df_ETc)
+    df_ETc = ETcCalculation.main(df_Kc)
+
+    # print(df_ETc)
     # Save to CSV file
-    # df_ETc.to_csv(args.result, index=False)
-    
+    df_ETc.to_csv(args.result, index=False)
+
     return 0
-     
+
 
 
 if __name__ == "__main__":
