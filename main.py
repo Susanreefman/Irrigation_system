@@ -12,8 +12,8 @@ Version: 1.1
 # Import necessary modules
 import sys
 import argparse
-import pandas as pd
 import logging
+import pandas as pd
 
 # Import additional scripts
 import ET0calculation
@@ -40,6 +40,12 @@ def parse_args():
 
 
 def configure_logger():
+    """
+    Create logger to store information with a specified log file
+
+    Returns:
+        logger (logging.Logger): The configured logger instance.
+    """
     # Create a logger
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
@@ -47,7 +53,7 @@ def configure_logger():
     # Create a file handler
     file_handler = logging.FileHandler('main_log.log')
     file_handler.setLevel(logging.DEBUG)
-    
+
     # Check if handlers already exist to avoid duplication
     if not logger.handlers:
         # Create a file handler
@@ -96,10 +102,10 @@ def main():
     Main function of the program, calling the scripts ET0calculation.py,
     Kc_curve.py and ETcCalculation.py
     """
-    
+
     # Configure logger
     logger = configure_logger()
-    
+
     # Log the start of the main script
     logger.info("Main script started.\n")
 
@@ -120,10 +126,10 @@ def main():
     # Save to CSV file
     df_ETc.to_csv(args.result, index=False)
     logger.info(f"Result saved in {args.result} \n" )
-    
+
     # Log the end of the main script
     logger.info("Main script finished.")
-    
+
     # Close the logger handlers to release resources
     logging.shutdown()
 

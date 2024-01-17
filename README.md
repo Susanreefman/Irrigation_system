@@ -31,6 +31,16 @@ Now, you are set to use this script.
 As stated before, the user is free to use their files. Therefore, I included one command for direct execution (copy-paste) and a more general description.
 
 #### General description
+
+Create .env file and add:
+'api_key_w=[apikey]'
+'api_key_a=[apikey]'
+
+```bash
+$ python3 get_weather_data.py -d [date] -l [latitude] -o [longitude] -r path/resultfile.csv
+```
+
+
 ```bash
 $ python3 main.py
 ```
