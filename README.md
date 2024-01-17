@@ -64,7 +64,7 @@ $ python3 model.py -t [result file] -p [file with data to predict] -r [name of r
 ```
 
 ### Using your own data
-**Step 1:Add an Environment file**
+**Step 1: Add an Environment file**
 - Create an `.env` file in the working directory
 - Add the following lines to the `.env` file, replacing `[apikey]` with your own API keys. 
 
@@ -73,7 +73,7 @@ api_key_w=[apikey]  # Your OpenWeather One Call API 3.0 key
 api_key_a=[apikey]  # Your Google Elevation API key
 ```
 
-**Step 2:Get weather data**
+**Step 2: Get weather data**
 - Run the script to retrieve weather data
 ```bash
 $ python3 Get_Weather_Data/get_weather_data.py -d [date] -l [latitude] -o [longitude] -r [result file]
@@ -83,7 +83,7 @@ $ python3 Get_Weather_Data/get_weather_data.py -d [date] -l [latitude] -o [longi
 $ python3 Get_Weather_Data/weather_data_processing.py -f [resulting file] -r [new result file]
 ```
 
-**Step 3:Acquire NDVI values**
+**Step 3: Acquire NDVI values**
 - Obtain NDVI values from [Copernicus](https://www.copernicus.eu/en/access-data) or [Planet](https://developers.planet.com/docs/basemaps/)
 - Add these values to the corresponding dates in the resulting weather file.
 (Optional: Run the NDVI processing script to format NDVI values correctly)
@@ -105,4 +105,4 @@ $ python3 model.py -t [file with training data] -p [file with predicting data] -
 
 ## Contact
 If you have any questions, suggestions, or encounter issues, feel free to reach out:
-**Email:** [Email me](mailto:h.s.reefman@st.hanze.nl)
+ [email](mailto:h.s.reefman@st.hanze.nl)
