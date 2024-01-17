@@ -40,10 +40,10 @@ The script was developed in the language Python (version 3.7.9). Please follow t
 
 ### Installing Necessary Packages
 
-In addition, a necessary external package needs to be installed; [pwlf](https://jekel.me/piecewise_linear_fit_py/index.html) pwlf (version 2.2.1) is used to predict breakpoints in the Kc curve. After that, execute the following command on the command line:
+In addition, a necessary external package needs to be installed; [pwlf](https://jekel.me/piecewise_linear_fit_py/index.html) (version 2.2.1) is used to predict breakpoints in the Kc curve. After that, execute the following command on the command line:
 
 ```bash
-$ pip install -r requirements.txt
+python3 -m pip install pwlf
 ```
 Now, you are set to use this program.
 
