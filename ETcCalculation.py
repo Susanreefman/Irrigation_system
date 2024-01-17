@@ -10,8 +10,11 @@ Version:1.1
 """
 
 import sys
+import logging
 
-def main(df):
+logger = logging.getLogger(__name__)
+
+def main(df, logger):
     """
     Main function of this script, calculating the actual evapotranspiration (ETc)
 
@@ -21,10 +24,13 @@ def main(df):
     Returns:
         df (pandas.Dataframe): dataframe with addition of ETc
     """
+    logger.info("ETc calculation started. \n")
 
     # Calculate ETc and add to dataframe
     df['ETc'] = df['ET0'] * df['Kc']
 
+    logger.info("ETc calculation completed. \n")
+    
     return df
 
 

@@ -13,6 +13,9 @@ Version:1.1
 # Import necessary modules
 import sys
 import math
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Constants
 ALBEDO = 0.23
@@ -124,7 +127,7 @@ def penman_monteith(temp, delta, wind_speed, solar_radiation, gamma, e_a, e_s):
 
 
 
-def main(df):
+def main(df, logger):
     """
     Main function of this script, calculating reference evapotranspiration
     of each date in pandas dataframe
@@ -136,8 +139,7 @@ def main(df):
         df(pandas.Dataframe): dataframe with meterological information and ET0
     """
 
-    ## Add to log file
-    # print("ET calculation started")
+    logger.info("ET0 calculation started. \n")
 
     for index, row in df.iterrows():
         lat = row['lat']
@@ -169,10 +171,8 @@ def main(df):
 
         # Add ET0 to dataframe
         df.at[index, 'ET0'] = round(ET0,1)
-
-    ## Add to log file
-    #print(f'Results saved in "{result_file}"')
-    #print('--------------------------------')
+  
+    logger.info("ET0 calculation completed. \n")
 
     return df
 

@@ -14,6 +14,9 @@ import sys
 import pwlf
 import numpy as np
 import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Functions
 def pwlf_function(doy, ndvi):
@@ -99,7 +102,7 @@ def interpolate(curve):
     return merged
 
 
-def main(df):
+def main(df, logger):
     """
     Main function of this script, calculating Kc value for each date in
     pandas dataframe
@@ -111,6 +114,8 @@ def main(df):
         new_df(pandas.Dataframe): dataframe with meterological information,
         ET0 and Kc value.
     """
+    
+    logger.info("Kc curve calculation started. \n")
 
     doy = np.array(df['doy'])
     ndvi = np.array(df['NDVI'])
@@ -130,6 +135,8 @@ def main(df):
 
     # Add Kc values to existing dataframe
     new_df = pd.merge(df, merged, on='doy', how='right')
+    
+    logger.info("Kc curve calculation completed. \n")
 
     return new_df
 
