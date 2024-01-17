@@ -93,7 +93,7 @@ def read_data(file, logger):
 
 def main():
     """
-    Main function from program, calling the scripts ET0calculation.py,
+    Main function of the program, calling the scripts ET0calculation.py,
     Kc_curve.py and ETcCalculation.py
     """
     

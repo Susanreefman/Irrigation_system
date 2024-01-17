@@ -11,23 +11,109 @@ Version: 1.1
 
 # Importing
 import sys
+import argparse
 import pandas as pd
+import logging
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter 
 
+def parse_args():
+    """
+    parse command-line arguments for input and output files
+
+    Returns:
+        parser.parse_args()
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--file",
+                        help="""The location and name to meteorological data in CSV format""",
+                        required=True)
+    parser.add_argument("-r", "--result",
+                        help="""The location and name result file in CSV format""",
+                        required=True)
+    return parser.parse_args()
+
+
+def configure_logger():
+    """
+    Create logger to store information with a specified log file
+
+    Returns:
+        logger (logging.Logger): The configured logger instance.
+    """
+    # Create a logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+
+    # Create a file handler
+    file_handler = logging.FileHandler('NDVI_processing_log.log')
+    file_handler.setLevel(logging.DEBUG)
+    
+    # Create a formatter and set the formatter for the handler
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+
+    # Add the handler to the logger
+    logger.addHandler(file_handler)
+
+    return logger
+
+
+def read_data(file, logger):
+    """
+    Read file and create pandas dataframe
+
+    Args:
+        file (str): filepath of input file
+
+    Returns:
+        df (pandas.Dataframe): dataframe with meteorological information from
+        inputfile
+    """
+
+    try:
+        df = pd.read_csv(file)
+
+    except FileNotFoundError:
+        logger.info(f"File '{file}' not found. \n")
+        sys.exit(1)
+    except IOError as e:
+        logger.info(f"An error occurred while reading the file: {e} \n")
+        sys.exit(1)
+
+    return df
+
     
 def remove_zeros(df):
-    """ ## """
-    cdf = pd.DataFrame(columns=['date', 'average', 'doy'])
+    """ 
+    Remove all average value below 0.1
+    
+    Args:
+        df (pandas.DataFrame): dataframe with 'doy' and 'average' NDVI values
+
+    Returns:
+        cdf (pandas.DataFrame): dataframe with 'doy' and 'average' NDVI values
+    """
+    cdf = pd.DataFrame(columns=['average', 'doy'])
     for index, row in df.iterrows():
         avg = df['average'][index]
         if avg > 0.1:
-            cdf.loc[len(cdf)] = [df['date'][index], df['average'][index], df['doy'][index]]
+            cdf.loc[len(cdf)] = [df['average'][index], df['doy'][index]]
     return cdf
 
 
 def remove_continuous_drops_left(data, date):
-    """ ## """
+    """ 
+    Remove drops in the left side of the NDVI curve
+    
+    Args:
+        data (list): list with average NDVI values
+        date (list): list with day in the year values
+
+    Returns:
+        corrected_date (list): list with day in the year values
+        corrected_data (list): list with average NDVI values
+    """
     corrected_data = [data[0]]
     corrected_date = [date[0]] # Start with the first value
     in_drop = False  # Flag to indicate if we're in a continuous drop
@@ -60,7 +146,17 @@ def remove_continuous_drops_left(data, date):
 
 
 def remove_continuous_drops_right(data, date):
-    """ ## """
+    """ 
+    Remove drops in the right side of the NDVI curve
+    
+    Args:
+        data (list): list with average NDVI values
+        date (list): list with day in the year values
+
+    Returns:
+        corrected_date (list): list with day in the year values
+        corrected_data (list): list with average NDVI values
+    """
     corrected_data = [data[0]]
     corrected_date = [date[0]]  # Start with the first value
     in_drop = False  # Flag to indicate if we're in a continuous drop
@@ -90,9 +186,17 @@ def remove_continuous_drops_right(data, date):
 
 
 def interpolate(df):
-    """ ## """
+    """ 
+    Interpolate datapoints in dataframe for days that are missing in dataframe
+    
+    Args:
+        df (pandas.DataFrame): dataframe with 'doy' and 'average' NDVI values
+
+    Returns:
+        merged (pandas.DataFrame): dataframe with interpolated datapoints     
+    """
     # Generate a range of days from the minimum to the maximum
-    full_range = pd.DataFrame({'doy': range(df['doy'].min(), df['doy'].max() + 1)})
+    full_range = pd.DataFrame({'doy': range(int(df['doy'].min()), int(df['doy'].max()) + 1)})
     
     # Merge to include all days in the range
     merged = pd.merge(df, full_range, on='doy', how='right')
@@ -104,19 +208,33 @@ def interpolate(df):
 
 
     
-def main(df, file):
-    """ ## """
+def main():
+    """ 
+    Main function of this script processing NDVI data
+    """
     
-    ## Add to log file 
-    #print(f'Datapoints in dataset: {len(df["average"])}')
+    # Configure logger
+    logger = configure_logger()
+    
+    # Log the start of the main script
+    logger.info("NDVI processing started.\n")
+
+    # Parse and read file to dataframe
+    args = parse_args()
+    logger.info(f"Using input file: {args.file} \n")
+    df = read_data(args.file, logger)
+    
+    logger.info(f'Datapoints in dataset: {len(df["average"])}')
     
     df_filtered = remove_zeros(df)
     
     maxavg = int(df_filtered['average'].idxmax())
 
+    # Cut dataframe to crop growth cycle of 160 days
     start = df_filtered.iloc[maxavg]['doy']-75
     end = df_filtered.iloc[maxavg]['doy']+85
 
+    # If growth cycle goes up to end of the year, cut the dataframe to the end of the year
     if end > 365:
         end = max(df_filtered['doy'])
     
@@ -125,13 +243,14 @@ def main(df, file):
     df = df.reset_index()
     df = df.drop('index', axis=1)
     
+    # Split dataframe in a left and right side of the curve, with average as breakpoint
     maxavg = int(df['average'].idxmax())
     left = df.iloc[:maxavg+1]
     right = df.iloc[maxavg:]
     
     right = right.reset_index()
     
-    # Removing drops
+    # Removing drops from both sides of the curve
     doy_l, datal = remove_continuous_drops_left(left['average'], left['doy'])
     doy_r, datar = remove_continuous_drops_right(right['average'], right['doy'])
     
@@ -143,38 +262,42 @@ def main(df, file):
     left = pd.DataFrame({'average': smleft, 'doy': doy_l})
     right = pd.DataFrame({'average': smright, 'doy': doy_r})
     
-    ## Add to log file 
-    #print(f'After removing drops: left side of curve {left.shape}, right side of curve {right.shape}')
+    logger.info(f'After removing drops: left side of curve {left.shape}, right side of curve {right.shape}')
     
     # Interpolate datapoints
     interpolate_left = interpolate(left)
     interpolate_right = interpolate(right)
     
-    ## Add to log file 
-    #print(f'After interpolating: left side of curve {interpolate_left.shape}, right side of curve {interpolate_right.shape}')
+    logger.info(f'After interpolating: left side of curve {interpolate_left.shape}, right side of curve {interpolate_right.shape}')
 
     # Merge left and right side of curve to new dataframe
     merge = pd.concat([interpolate_left, interpolate_right], axis=0)
     
-    ## Add to log file 
-    #print(f'shape of dataframe: {merge.shape}')
+    logger.info(f'shape of dataframe: {merge.shape} \n')
     
-    # Plot
+    # Save to file in csv format
+    merge.to_csv(args.result, index=False)
+    
+    logger.info(f'Dataframe saved in: {args.result}')
+    
+    # Plot figure
     plt.figure()
     plt.plot(df['doy'], df['average'], color='#00FF00', linewidth=0.5)
     plt.plot(merge['doy'], merge['average'])
     plt.ylabel('NDVI')
     plt.xlabel('Day in year')
-    ## Look if legend is necessary
-    #plt.legend()
-    plt.title('NDVI' + file)
-    plt.xticks(list(range(90, 300, 30)), ['Apr', 'Jun', 'Jul','Aug','Sep', 'Okt', 'Nov'])
+    plt.title('NDVI')
     plt.yticks([0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1])
-    plt.savefig('C:/Users/Susan/Downloads/Test/NDVI_' + file + '.png')
+    plt.savefig(args.result + '.png')
     
-    ## Add saving png statement to log file 
+    logger.info(f'Created image saved in: {args.result}.png \n')
     
-    return merge
+    logger.info("NDVI processing completed.")
+    
+    # Close the logger handlers to release resources
+    logging.shutdown()
+    
+    return 0
 
     
 if __name__ == "__main__":
